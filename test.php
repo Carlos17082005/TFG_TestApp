@@ -1,52 +1,59 @@
 <?php
-    // session_start() siempre debe ir lo más arriba posible
     session_start();
-    include 'funciones.php';
-    include 'fun-consultas.php';
+    include 'funciones/funciones.php';
+    include 'funciones/fun-test.php';
 
-    // 1. GESTIÓN DE SESIONES
-    // Si venimos de index.php (el form tiene el name "iniciar_test"), guardamos los datos en la sesión
-    if (isset($_POST['iniciar_test'])) {
+    if (isset($_POST['iniciar_test'])) {  
+        // Como esta pestaña recibe datos y luego se llama a si misma, si recibe datos los guarda en cookies para que no pete
         $_SESSION['modulo'] = test_input($_POST['modulo']);
         $_SESSION['test'] = test_input($_POST['test']);
     }
 
-    // Verificamos que no nos hayamos metido a la URL directamente sin pasar por el index
-    if (!isset($_SESSION['modulo']) || !isset($_SESSION['test'])) {
-        die("Error: No has seleccionado ningún test. <a href='index.php'>Volver al inicio</a>");
+    if (!isset($_SESSION['modulo']) || !isset($_SESSION['test'])) {  
+        // Si estos datos no existen detecta que no se ha seleccionado ningun test
+        die("<div style='text-align:center; padding:50px; font-family:sans-serif;'>
+                <h2>Error: No has seleccionado ningún test.</h2>
+                <a href='index.php' style='color:#4F46E5;'>Volver al inicio</a>
+             </div>");
     }
 
     $modulo = $_SESSION['modulo'];
     $id_test = $_SESSION['test'];
     
-    // Obtenemos las preguntas de la BD
-    $preguntas = preguntasTest($modulo, $id_test);
-
-    // 2. LÓGICA DE LA PÁGINA (Mostrar Test vs Mostrar Resultados)
-    // Si el usuario acaba de pulsar "Enviar Test" en el formulario de las preguntas
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['enviar_test'])) {
-        
-        // Si dejó alguna pregunta en blanco, evitamos el error
-        $respuestasUsuario = isset($_POST['respuestas']) ? $_POST['respuestas'] : []; 
-    
-        // Calculamos los aciertos
-        $resultado = comprobarRespuestas($respuestasUsuario, $preguntas);
-        
-        echo "<div style='text-align: center; margin-top: 50px; font-family: Arial;'>";
-        echo "<h2>¡Test terminado!</h2>";
-        echo "<h3>Resultados de: " . htmlspecialchars($modulo) . "</h3>";
-        echo "<p>Has acertado <strong>" . $resultado['aciertos'] . "</strong> de " . $resultado['total'] . " preguntas.</p>";
-        echo "<p>Tu nota final es: <strong>" . $resultado['nota_final'] . " sobre 100</strong>.</p>";
-        
-        echo "<br><a href='index.php'><button style='padding: 10px; cursor:pointer;'>Volver al Inicio</button></a>";
-        echo "</div>";
-
-        // (Opcional) Borrar la sesión para obligar a seleccionar desde index la próxima vez
-        // session_unset(); 
-
-    } else {
-        // Si NO ha enviado el test todavía, se lo mostramos para que lo haga
-        echo "<h2 style='font-family: Arial;'>Realizando test de " . htmlspecialchars($modulo) . "</h2>";
-        mostrarTest($preguntas);
-    }
+    $preguntas = preguntasTest($modulo, $id_test);  // Recupera las preguntas de la BD
 ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realizando Test - <?php echo htmlspecialchars($modulo); ?></title>  <!-- Pone el nombre del tets -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <?php
+            if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['enviar_test'])) {  
+                // Una vez terminado el test y enviado lo comprueba y muestra el resultado
+                $rUsuario = isset($_POST['respuestas']) ? $_POST['respuestas'] : []; 
+                $resultado = comprobarRespuestas($rUsuario, $preguntas);
+                
+                echo "<div class='results'>";
+                echo "<h2>¡Test Completado!</h2>";
+                echo "<p class='subtitle'>Resultados del módulo: <b>" . htmlspecialchars($modulo) . "</b></p>";
+                
+                echo "<p>Has acertado <b>" . $resultado['aciertos'] . "</b> de " . $resultado['total'] . " preguntas.</p>";
+                echo "<div class='nota-final'>" . $resultado['nota_final']/10 . "/10</div>";
+                
+                echo "<a href='index.php' class='btn btn-secondary'>Volver al Inicio</a>";
+                echo "</div>";
+
+            } else {  // Al iniciar la pagina detecta un envio, como no es 'enviar_test' imprime el test
+                echo "<h2>Test de " . htmlspecialchars($modulo) . "</h2>";
+                echo "<p class='subtitle'>Lee atentamente y selecciona la respuesta correcta.</p>";
+                mostrarTest($preguntas);
+            }
+        ?>
+    </div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+/* style.css */
+:root {
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --bg-color: #F3F4F6;
+    --card-bg: #FFFFFF;
+    --text-main: #1F2937;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+/* Contenedor principal (Tarjeta) */
+.container {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 650px;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    height: fit-content;
+}
+
+h1, h2, h3 {
+    color: var(--text-main);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Formularios y Desplegables */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+select, button, .btn {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+select {
+    background-color: #FAFAFA;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+select:disabled {
+    background-color: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+/* Botones */
+button, input[type="submit"], .btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 5px; /* Bordes un poco redondeados */
+    padding: 10px 20px; /* Espacio interior para que no se vea aplastado */
+    cursor: pointer; /* Muestra la manita al pasar el ratón */
+}
+
+button:hover, input[type="submit"]:hover, .btn:hover {
+    background-color: var(--primary-hover); /* Solo cambia el color al pasar el ratón */
+}
+
+.btn-secondary {
+    background-color: var(--text-muted);
+    margin-top: 1rem;
+    text-decoration: none;
+}
+.btn-secondary:hover { background-color: #4B5563; }
+
+/* Estilos de las Preguntas del Test */
+.question-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background-color: #FAFAFA;
+}
+
+.question-card h3 {
+    text-align: left;
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    background-color: white;
+    transition: all 0.2s;
+}
+
+.option-label:hover {
+    background-color: #EEF2FF;
+    border-color: #A5B4FC;
+}
+
+.option-label input[type="radio"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* Resultados */
+.results { text-align: center; }
+.nota-final {
+    font-size: 3rem;
+    color: var(--primary);
+    font-weight: 800;
+    margin: 1rem 0;
+}
+.error-msg {
+    color: #DC2626;
+    background-color: #FEE2E2;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}

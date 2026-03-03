@@ -1,6 +1,6 @@
 <?php
     // obtener_tests.php
-    include 'funciones.php';
+    include 'funciones/funciones.php';
 
     header('Content-Type: application/json; charset=utf-8');
 
