@@ -1,15 +1,17 @@
 <?php
-    function test_input($data) {  // Permite realizar una limpieza de los campos de un formulario para evitar inyeccion de codigo
-    // Recibe un dato strig o number
-    // Devulve el mismo dato pero sin caracteres especiales o codigo que pueda afectar nuestro codigo
+    // =========================================================================
+    // INTERRUPTOR GLOBAL: Cambia a 'false' para desactivar TODA la aleatoriedad
+    // =========================================================================
+    define('ACTIVAR_ALEATORIEDAD', true); 
+
+    function test_input($data) {  
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data);
         return $data;
     }
     
-    function conexionBD()  {  // Permite conectarse a la base de datos testapp
-    // Devuelve una variable con la informacion de la conexion, para cerrar la conexion $conn = null
+    function conexionBD()  {  
         try  {
             $servername = "localhost";
             $username = "root";
@@ -25,9 +27,7 @@
         }
     }
 
-    function error($e)  {  // Funcion para imprimir errores SQL personalisados
-    // Recibe una variable con la informacion del error
-    // Devuelve el mensaje personalisado segun el codigo del error
+    function error($e)  {  
         $error = $e -> errorInfo;
         $codigo_error = $error[1];
 
@@ -49,40 +49,18 @@
         }
     }
 
-    // Funcion para normalizar texto
-    // Como hay varias cosas a tener en cuenta de la pedi a gemini y esta sin revisar (no funciona bien por lo menos las tildes)
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     function normalizarRespuesta($texto) {
-        // 1. Estandarizar apóstrofes
-        // Convertimos cualquier tipo de comilla simple o acento grave al apóstrofe recto estándar (')
         $texto = str_replace(['’', '‘', '´', '`'], "'", $texto);
-
-        // 2. Convertir todo a minúsculas
         $texto = mb_strtolower($texto, 'UTF-8');
-
-        // 3. Eliminar tildes y diéresis (dejando la puntuación intacta)
-        // Usamos strtr porque es muy eficiente para reemplazar caracteres exactos
         $reemplazos = [
             'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u',
             'ä' => 'a', 'ë' => 'e', 'ï' => 'i', 'ö' => 'o', 'ü' => 'u',
             'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u',
-            'â' => 'a', 'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u',
-            // Nota: Mantenemos la 'ñ' intacta porque en español cambia el significado de la palabra,
-            // pero si quieres ignorarla también, descomenta la siguiente línea:
-            // 'ñ' => 'n'
+            'â' => 'a', 'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u'
         ];
         $texto = strtr($texto, $reemplazos);
-
-        // 4. Unificar signos de apertura (Opcional pero recomendado)
-        // Como el inglés no usa '¿' ni '¡', los eliminamos para que 
-        // "¿how are you?" y "how are you?" se evalúen igual.
         $texto = str_replace(['¿', '¡'], '', $texto);
-
-        // 5. Limpiar espacios dobles o accidentales a los lados
         $texto = preg_replace('/\s+/', ' ', $texto);
         return trim($texto);
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 ?>
