@@ -29,7 +29,7 @@
                     <select id="select_modulo" name="modulo" required>
                         <option value="">Selecciona un módulo</option>
                         <?php
-                            try {
+                            try {  // Rellena con los modulos del ciclo
                                 desplegableModulos($_SESSION['Ciclo']); 
                             }
                             catch(PDOException $e)  {
@@ -39,6 +39,7 @@
                         ?>
                     </select>
                     
+                    <!-- Estado base, cambia de forma dinamica con el JS -->
                     <select id="select_test" name="test" disabled required>
                         <option value="">Primero selecciona un módulo</option>
                     </select>

@@ -4,6 +4,7 @@
 
     header('Content-Type: application/json; charset=utf-8');
 
+    // Recupera los datos que le enviamos desde el fetch (js)
     $ciclo = $_GET['ciclo'];
     $modulo = $_GET['modulo'];
 
@@ -16,16 +17,16 @@
 
         $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // --- NUEVA LÓGICA ---
-        // Comprobamos si la base de datos no devolvió ninguna fila
+        // Si la cosulta no devulve nada envia 'vacio' al JS, pero si devuelve algun test, los envia todos al JS
         if (empty($resultados)) {
-            echo json_encode('vacio'); // Enviamos exactamente la cadena 'vacio'
+            echo json_encode('vacio');
         } else {
-            echo json_encode($resultados); // Enviamos los tests encontrados
+            echo json_encode($resultados);
         }
 
     } catch (PDOException $e) {
         echo json_encode(["error" => $e->getMessage()]);
+
     } finally {
         $conn = null;
     }

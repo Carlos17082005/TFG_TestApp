@@ -42,11 +42,12 @@
                 echo "<h2>¡Test Completado!</h2>";
                 echo "<p class='subtitle'>Resultados del módulo: <b>" . htmlspecialchars($modulo) . "</b></p>";
                 
-                echo "<p>Has acertado <b>" . $resultado['aciertos'] . "</b> de " . $resultado['total'] . " preguntas.</p>";
+                echo "<p>Has acertado <b>" . round($resultado['aciertos'], 2) . "</b> de " . $resultado['total'] . " preguntas.</p>";
                 echo "<div class='nota-final'>" . $resultado['nota_final']/10 . "/10</div>";
                 
                 echo "<a href='index.php' class='btn btn-secondary'>Volver al Inicio</a>";
                 echo "</div>";
+                mostrarTest($preguntas);
 
             } else {  // Al iniciar la pagina detecta un envio, como no es 'enviar_test' imprime el test
                 echo "<h2>Test de " . htmlspecialchars($modulo) . "</h2>";
