@@ -28,8 +28,11 @@
             $estado = $informe ? $informe[$id_pregunta] : null;
             
             echo '<div class="question-card">';
-            if (is_string($contenido['pregunta']))  {
-                echo '<h3>' . htmlspecialchars($contenido['pregunta']) . '</h3>';
+            
+            // LÓGICA DE TÍTULO MEJORADA: Puede venir en 'enunciado' o en 'pregunta'
+            $titulo = $contenido['enunciado'] ?? $contenido['pregunta'] ?? '';
+            if (is_string($titulo) && $titulo !== '')  {
+                echo '<h3 style="margin-bottom: 1.2rem;">' . htmlspecialchars($titulo) . '</h3>';
             }
             
             if (isset($contenido['tipo']))  {
@@ -43,12 +46,9 @@
             } else {
                 if (!$informe) {
                     $letras = array_keys($contenido['opciones']);
-                    
-                    // --- INTERRUPTOR APLICADO AQUÍ ---
                     if (ACTIVAR_ALEATORIEDAD) {
                         shuffle($letras); 
                     }
-                    
                     $_SESSION['orden_internos'][$id_pregunta] = $letras; 
                 } else {
                     $letras = $_SESSION['orden_internos'][$id_pregunta] ?? array_keys($contenido['opciones']);
@@ -98,7 +98,9 @@
         foreach ($preguntas as $row) {
             $id_pregunta = $row['id_pregunta'];
             $contenido = json_decode($row['contenido'], true);  
-            $respuesta_correcta = $contenido['respuesta']; 
+            
+            // La respuesta correcta puede estar en 'respuesta' o anidada en 'ejercicios'
+            $respuesta_correcta = $contenido['respuesta'] ?? null; 
             $respuesta_usuario = isset($rUsuario[$id_pregunta]) ? $rUsuario[$id_pregunta] : null;  
 
             $informe[$id_pregunta] = [
@@ -120,8 +122,25 @@
                 }
                 
             } else if (isset($contenido['tipo']) && $contenido['tipo'] === 'texto')  {
-                if (normalizarRespuesta($respuesta_usuario) === normalizarRespuesta($respuesta_correcta)) { 
-                    $aciertos++; 
+                // NUEVA LÓGICA PARA TEXTOS MULTI-HUECO
+                if (isset($contenido['ejercicios'])) {
+                    $huecos_totales = 0;
+                    $huecos_correctos = 0;
+                    
+                    foreach ($contenido['ejercicios'] as $i_ejercicio => $ejercicio) {
+                        foreach ($ejercicio['respuestas'] as $i_hueco => $resp_correcta) {
+                            $huecos_totales++;
+                            $resp_usu = $respuesta_usuario[$i_ejercicio][$i_hueco] ?? '';
+                            
+                            if (normalizarRespuesta($resp_usu) === normalizarRespuesta($resp_correcta)) {
+                                $huecos_correctos++;
+                            }
+                        }
+                    }
+                    
+                    if ($huecos_totales > 0) {
+                        $aciertos += ($huecos_correctos / $huecos_totales);
+                    }
                 }
 
             } else {  

@@ -88,9 +88,12 @@
                 $classSelect = '';
                 $user_ans = $estado ? ($estado['usuario'][$number] ?? '') : '';
                 
+                // CAMBIO AQUÍ: Evaluamos si es correcto para pintar de verde
                 if ($estado) {
                     $correct_ans = $estado['correcta'][$number] ?? '';
-                    if ($user_ans !== $correct_ans) {
+                    if ($user_ans === $correct_ans) {
+                        $classSelect = 'correct-bg'; 
+                    } else {
                         $classSelect = 'incorrect-bg'; 
                     }
                 }
@@ -125,27 +128,59 @@
     }
 
     function decode_texto($id_pregunta, $contenido, $estado = null)  {  
-        $pregunta = $contenido['pregunta'];
         $disabled = $estado ? 'disabled' : '';
-        $user_ans = $estado ? htmlspecialchars($estado['usuario']) : '';
-        
-        $class = 'input-text input-texto-inline';
-        if ($estado) {
-            if (normalizarRespuesta($estado['usuario']) === normalizarRespuesta($estado['correcta'])) {
-                $class .= ' correct-bg';
-            } else {
-                $class .= ' incorrect-bg';
+        $ejercicios = $contenido['ejercicios'] ?? [];
+        $es_lista = count($ejercicios) > 1;
+
+        // --- NUEVA LÓGICA DE ALEATORIEDAD PARA SUB-PREGUNTAS ---
+        if (!$estado) {
+            $keys_ejercicios = array_keys($ejercicios);
+            if (ACTIVAR_ALEATORIEDAD && $es_lista) {
+                shuffle($keys_ejercicios);
             }
+            $_SESSION['orden_internos'][$id_pregunta] = $keys_ejercicios;
+        } else {
+            $keys_ejercicios = $_SESSION['orden_internos'][$id_pregunta] ?? array_keys($ejercicios);
         }
 
-        echo '<h3 style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">';
-        echo htmlspecialchars($pregunta['cadena1']);
-        echo '<input type="text" class="' . $class . '" name="respuestas[' . $id_pregunta . ']" value="' . $user_ans . '" ' . $disabled . ' ' . (!$estado?'required':'') . ' autocomplete="off">';
-        echo htmlspecialchars($pregunta['cadena2']);
-        echo '</h3>';
-        
-        if ($estado && normalizarRespuesta($estado['usuario']) !== normalizarRespuesta($estado['correcta'])) {
-            echo '<div class="correct-text">Respuesta correcta: ' . htmlspecialchars($estado['correcta']) . '</div>';
+        // Iteramos sobre los ejercicios usando el orden (aleatorio o guardado)
+        foreach ($keys_ejercicios as $i_visual => $i_ejercicio) {
+            $ejercicio = $ejercicios[$i_ejercicio];
+            $cadenas = $ejercicio['cadenas'];
+            $respuestas_correctas = $ejercicio['respuestas'];
+
+            echo '<div style="margin-bottom: 15px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">';
+            
+            // Usamos $i_visual + 1 para que visualmente siempre sea 1., 2., 3... independientemente del orden interno
+            if ($es_lista) {
+                echo '<strong>' . ($i_visual + 1) . '.</strong> ';
+            }
+
+            foreach ($cadenas as $i_cadena => $texto) {
+                echo '<span>' . htmlspecialchars($texto) . '</span>';
+
+                if ($i_cadena < count($cadenas) - 1) {
+                    $user_ans = $estado ? ($estado['usuario'][$i_ejercicio][$i_cadena] ?? '') : '';
+                    $correct_ans = $respuestas_correctas[$i_cadena] ?? '';
+                    
+                    $class = 'input-text input-texto-inline';
+                    if ($estado) {
+                        if (normalizarRespuesta($user_ans) === normalizarRespuesta($correct_ans)) {
+                            $class .= ' correct-bg';
+                        } else {
+                            $class .= ' incorrect-bg';
+                        }
+                    }
+
+                    // El name usa el $i_ejercicio original para que la validación lo encuentre perfectamente
+                    echo '<input type="text" class="' . $class . '" name="respuestas[' . $id_pregunta . '][' . $i_ejercicio . '][' . $i_cadena . ']" value="' . htmlspecialchars($user_ans) . '" ' . $disabled . ' ' . (!$estado?'required':'') . ' autocomplete="off">';
+                    
+                    if ($estado && normalizarRespuesta($user_ans) !== normalizarRespuesta($correct_ans)) {
+                        echo '<span class="correct-text" style="font-size: 0.85rem;">(' . htmlspecialchars($correct_ans) . ')</span>';
+                    }
+                }
+            }
+            echo '</div>';
         }
     }
 
