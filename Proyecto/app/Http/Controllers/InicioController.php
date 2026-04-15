@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class InicioController
 {
-    public function mostrarIndex() {
+    public function indexMostrar() {
         if (Auth::check()) {
             return Auth::user()->esProfesor()
                 ? view('profesor.dashboard')
@@ -17,19 +17,19 @@ class InicioController
         return view('index');
     }
 
-    public function mostrarLogin() {
+    public function loginMostrar() {
         return view('auth.login');
     }
 
-    public function mostrarRegister() {
+    public function registerMostrar() {
         return view('auth.register');
     }
 
-    public function mostrarDashboardProfesor() {
+    public function dashboardProfesorMostrar() {
         return view('profesor.dashboard');
     }
 
-    public function mostrarDashboardAlumno() {
+    public function dashboardAlumnoMostrar() {
         return view('alumno.dashboard');
     }
 }

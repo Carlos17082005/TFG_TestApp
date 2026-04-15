@@ -10,7 +10,7 @@ class AlumnoModuloController extends Controller
 {
     // Muestra todos los módulos a los que se ha unido el alumno
 
-    public function mostrarModulos() {
+    public function modulosMostrar() {
         $modulos = Auth::user()->alumno->modulos;
 
         return view('alumno.modulo.modulos', compact('modulos'));
@@ -18,7 +18,7 @@ class AlumnoModuloController extends Controller
 
     // Muestra todos los módulos creados por los profesores
 
-    public function unirseModuloMostrar() {
+    public function seleccionarModuloMostrar() {
         $alumno = Auth::user()->alumno;
 
         $modulos = Modulo::whereDoesntHave('alumnos', function ($query) use ($alumno) {
@@ -48,7 +48,7 @@ class AlumnoModuloController extends Controller
 
         $alumno->modulos()->attach($modulo->id_modulo);
 
-        return redirect()->route('alumno.moduloDashboard', compact('modulo'));
+        return redirect()->route('alumno.moduloDashboard.mostrar', compact('modulo'));
     }
 
     // --- DASHBOARD MÓDULOS DE ALUMNOS ---

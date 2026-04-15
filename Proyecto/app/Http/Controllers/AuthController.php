@@ -54,7 +54,7 @@ class AuthController extends Controller {
 
         Auth::login($usuario);
  
-        return redirect()->route('inicio.mostrarDashboardAlumno');
+        return redirect()->route('inicio.dashboardAlumno.mostrar');
     }
 
     // Cerrar sesión

@@ -94,6 +94,6 @@
 
     <p>
         ¿Ya tienes una cuenta?
-        <a href="{{ route('inicio.mostrarLogin') }}">Iniciar sesión</a>
+        <a href="{{ route('inicio.login.mostrar') }}">Iniciar sesión</a>
     </p>
 @endsection

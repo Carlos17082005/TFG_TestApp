@@ -6,11 +6,11 @@ use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ProfesorModuloController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [InicioController::class, 'mostrarIndex'])->name('inicio.mostrarIndex');
+Route::get('/', [InicioController::class, 'indexMostrar'])->name('inicio.index.mostrar');
 
 Route::middleware('guest')->controller(InicioController::class)->group(function(){
-    Route::get('/login', 'mostrarLogin')->name('inicio.mostrarLogin');
-    Route::get('/register', 'mostrarRegister')->name('inicio.mostrarRegister');
+    Route::get('/login', 'loginMostrar')->name('inicio.login.mostrar');
+    Route::get('/register', 'registerMostrar')->name('inicio.register.mostrar');
 
     Route::controller(AuthController::class)->group(function() {
         Route::post('/login', 'login')->name('auth.login');
@@ -25,42 +25,42 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
     Route::middleware('profesor')->group(function() {
         // Mostrar dashboard de profesor
 
-        Route::get('/profesor', [InicioController::class, 'mostrarDashboardProfesor'])->name('inicio.mostrarDashboardProfesor');
+        Route::get('/profesor', [InicioController::class, 'dashboardProfesorMostrar'])->name('inicio.dashboardProfesor.mostrar');
 
         // Crear modulos
 
         Route::controller(ProfesorModuloController::class)->group(function() {
             // Mostrar formulario para crear modulos nuevos
-            Route::get('/profesor/crearModulo', 'crearModuloMostrar')->name('profesor.crearModuloMostrar');
+            Route::get('/profesor/crearModulo', 'crearModuloMostrar')->name('profesor.crearModulo.mostrar');
 
             // Crear el modulo
-            Route::post('/profesor/crearModulo', 'crearModuloCrear')->name('profesor.crearModuloCrear');
+            Route::post('/profesor/crearModulo', 'crearModuloCrear')->name('profesor.crearModulo.crear');
         });
 
         // Acceder Modulos
         Route::middleware('moduloProfesor')->controller(ProfesorModuloController::class)
             ->missing(function () { // En caso de que no exista el modulo
-                return redirect()->route('inicio.mostrarDashboardProfesor')
+                return redirect()->route('inicio.dashboardProfesor.mostrar')
                     ->with('error', 'Este módulo no existe.');
             })
             ->group(function () {
-                Route::get('/profesor/{modulo}', 'mostrarModulo')->name('profesor.mostrarModulo');
+                Route::get('/profesor/{modulo}', 'modulosMostrar')->name('profesor.modulos.mostrar');
             });
     });
 
     Route::middleware('alumno')->group(function() {
-        Route::get('/alumno', [InicioController::class, 'mostrarDashboardAlumno'])->name('inicio.mostrarDashboardAlumno');
+        Route::get('/alumno', [InicioController::class, 'dashboardAlumnoMostrar'])->name('inicio.dashboardAlumno.mostrar');
 
         Route::controller(AlumnoModuloController::class)->group(function() {
-            Route::get('alumno/modulos', 'mostrarModulos')->name('alumno.mostrarModulos');
-            Route::get('alumno/modulos/unirse', 'unirseModuloMostrar')->name('alumno.unirseModuloMostrar');
-            Route::get('alumno/modulos/unirse/{modulo}', 'matricularseModuloMostrar')->name('alumnos.matricularseModuloMostrar');
-            Route::post('alumno/modulos/unirse/{modulo}', 'matricularseModuloEntrar')->name('alumnos.matricularseModulo.Entrar');
+            Route::get('alumno/modulos', 'modulosMostrar')->name('alumno.modulos.mostrar');
+            Route::get('alumno/modulos/seleccionar', 'seleccionarModuloMostrar')->name('alumno.seleccionarModulo.mostrar');
+            Route::get('alumno/modulos/seleccionar/{modulo}', 'matricularseModuloMostrar')->name('alumnos.matricularseModulo.mostrar');
+            Route::post('alumno/modulos/seleccionar/{modulo}', 'matricularseModuloEntrar')->name('alumnos.matricularseModulo.entrar');
 
             // Dentro del modulo
 
             Route::middleware('moduloAlumno')->group(function() {
-                Route::get('alumno/modulo/{modulo}', 'moduloDashboardMostrar')->name('alumno.moduloDashboard');
+                Route::get('alumno/modulo/{modulo}', 'moduloDashboardMostrar')->name('alumno.moduloDashboard.mostrar');
             });
         });
 

@@ -7,5 +7,5 @@
     
     Alumno
 
-    <p><a href="{{ route('alumno.mostrarModulos') }}">Modulos</a></p>
+    <p><a href="{{ route('alumno.modulos.mostrar') }}">Modulos</a></p>
 @endsection

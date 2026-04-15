@@ -17,7 +17,7 @@
 
     @forelse (Auth::user()->profesor->modulos as $modulo)
 
-        <a href="{{ route('profesor.mostrarModulo', $modulo->id_modulo) }}">
+        <a href="{{ route('profesor.modulos.mostrar', $modulo->id_modulo) }}">
             {{ $modulo->id_modulo }}
             {{ $modulo->ciclo }}
             {{ $modulo->modulo }}
@@ -27,5 +27,5 @@
         <p>No tiene modulos</p>
     @endforelse
 
-    <p><a href="{{ route('profesor.crearModuloMostrar') }}">Crear nuevo modulo</a></p>
+    <p><a href="{{ route('profesor.crearModulo.mostrar') }}">Crear nuevo modulo</a></p>
 @endsection

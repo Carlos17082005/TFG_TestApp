@@ -22,7 +22,7 @@ class ModuloPerteneceAlumno
 
         if (!$modulo->alumnos->contains('id_alumno', $usuario->id_usuario)) {
             return redirect()
-                ->route('inicio.mostrarDashboardAlumno')
+                ->route('inicio.dashboardAlumno.mostrar')
                 ->with('error', 'No tienes acceso a este módulo.');
         }
 

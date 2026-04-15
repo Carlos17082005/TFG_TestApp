@@ -10,7 +10,7 @@ class ProfesorModuloController extends Controller {
 
     // Mostrar la vista del módulo del profesor
 
-    public function mostrarModulo(Modulo $modulo) {
+    public function modulosMostrar(Modulo $modulo) {
         return view('profesor.modulo.modulo', compact('modulo'));
     }
 
@@ -37,6 +37,6 @@ class ProfesorModuloController extends Controller {
             'id_profesor' => Auth::user()->profesor->id_profesor,
         ]);
 
-        return redirect()->route('profesor.mostrarModulo', compact('modulo'));
+        return redirect()->route('profesor.modulos.mostrar', compact('modulo'));
     }
 }

@@ -58,6 +58,6 @@
  
     <p>
         ¿No tienes una cuenta?
-        <a href="{{ route('inicio.mostrarRegister') }}">Registrarse</a>
+        <a href="{{ route('inicio.register.mostrar') }}">Registrarse</a>
     </p>
 @endsection
