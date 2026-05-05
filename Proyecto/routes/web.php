@@ -8,6 +8,7 @@ use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\ProfesorAlumnoController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\RealizarTestController;
+use App\Http\Controllers\AlumnoTestController;
 use App\Models\Modulo;
 use Illuminate\Support\Facades\Route;
 
@@ -148,6 +149,11 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
 
             // Dashboard de alumno
             Route::get('/dashboard/{modulo?}', [InicioController::class, 'dashboardAlumnoMostrar'])->name('inicio.dashboardAlumno.mostrar');
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            // test
+            Route::get('/{modulo}/examen', [AlumnoTestController::class, 'examenes'])->name('alumno.tests.examen');
+            Route::get('/{modulo}/practica', [AlumnoTestController::class, 'practicas'])->name('alumno.tests.practica');
         });
 
         Route::controller(AlumnoModuloController::class)->group(function() {

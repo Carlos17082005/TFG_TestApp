@@ -26,9 +26,9 @@ class ModuloPerteneceAlumno
 
         $usuario = Auth::user();
 
-        /*if (!$modulo instanceof Modulo) {
+        if (!$modulo instanceof Modulo) {
             $modulo = Modulo::findOrFail($modulo);
-        }*/
+        }
 
         $tieneAcceso = $modulo->alumnos()
             ->where('alumnos.id_alumno', $usuario->alumno->id_alumno)
