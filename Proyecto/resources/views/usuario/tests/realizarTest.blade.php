@@ -1,3 +1,4 @@
+@extends('layouts.app')
 <div>
     <h1>{{ $test->nombre }}</h1>
     <p>{{ $test->descripcion }}</p>
@@ -76,29 +77,3 @@
     </form>
 </div>
 
-<style>  /* provicional para asegurar que funciona */
-    /* 🟢 Clase para resaltar las respuestas correctas */
-    .correct-bg {
-        background-color: #d4edda !important;
-        border: 2px solid #28a745 !important;
-        color: #155724 !important;
-        border-radius: 5px;
-    }
-
-    /* 🔴 Clase para resaltar los fallos del usuario */
-    .incorrect-bg {
-        background-color: #f8d7da !important;
-        border: 2px solid #dc3545 !important;
-        color: #721c24 !important;
-        border-radius: 5px;
-    }
-
-    /* 🟢 Texto extra para chivarle la respuesta correcta si falló (en texto o conecta) */
-    .correct-text {
-        color: #28a745;
-        font-weight: bold;
-        margin-top: 5px;
-        font-size: 0.9rem;
-        display: block;
-    }
-</style>

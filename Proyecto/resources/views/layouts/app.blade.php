@@ -7,12 +7,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>@yield('title')</title>
 
-    <!-- Temporal. Para hacer más legible la página sin tocar css-->
-    <style>
-        body{
-            text-align: center;
-        }
-    </style>
+    <!-- CSS de la Web  -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     
