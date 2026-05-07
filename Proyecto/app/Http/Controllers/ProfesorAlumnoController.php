@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Alumno;
 use App\Models\Modulo;
 use App\Models\Usuario;
+use App\Models\Puntuacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,4 +60,23 @@ class ProfesorAlumnoController extends Controller
             return back()->withErrors(['error' => 'No se ha podido eliminar al alumno']);
         }
     }
+
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Historial
+    public function historial(Modulo $modulo) {
+        try {
+            $puntuaciones = $modulo->puntuaciones()
+                ->with(['alumno.usuario', 'test'])
+                ->orderBy('fecha', 'desc')
+                ->get();
+
+            return view('usuario.historial', compact('puntuaciones', 'modulo'));
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'No se ha podido acceder al historial'. $e->getMessage()]);
+        }
+    }   
 }

@@ -2,7 +2,7 @@
 
 @foreach (['verdadero', 'falso'] as $valor)
     @php
-        $class  = 'option-label';
+        $class  = '';
         $checked = '';
 
         if ($estado) {

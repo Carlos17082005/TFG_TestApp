@@ -37,4 +37,8 @@ class Modulo extends Model {
     public function tests() {
         return $this->hasMany(Test::class, 'id_modulo');
     }
+
+    public function puntuaciones() {
+        return $this->hasManyThrough(Puntuacion::class, Test::class, 'id_modulo', 'id_test', 'id_modulo', 'id_test' );
+    }
 }

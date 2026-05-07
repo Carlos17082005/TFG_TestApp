@@ -3,7 +3,7 @@
 @foreach ($opciones as $index => $opcion)
     @php
         $letra = chr(97 + $index);
-        $class = 'option';
+        $class = '';
         $checked = '';
 
         if ($estado) {

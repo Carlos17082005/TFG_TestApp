@@ -7,6 +7,7 @@ use App\Models\Test;
 use App\Models\Puntuacion;
 use App\Services\TestService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RealizarTestController extends Controller
 {
@@ -16,7 +17,8 @@ class RealizarTestController extends Controller
     // PROBAR
     public function iniciarTest(Modulo $modulo, Test $test) {
         $this->testService->limpiarSesion($test->id_test, $test->preguntas);
-        return redirect()->route('tests.realizar', [$modulo->id_modulo, $test->id_test]);
+        $ruta = Auth::user()->rol === 'profesor' ? 'profesor.tests.realizar' : 'alumno.tests.realizar';
+        return redirect()->route($ruta, [$modulo->id_modulo, $test->id_test]);
     }
 
     public function probarTest(Modulo $modulo, Test $test) {
@@ -41,12 +43,17 @@ class RealizarTestController extends Controller
         $usuario = auth()->user();
 
         if ($usuario->rol === 'alumno') { 
-            Puntuacion::create([
-                'id_test'    => $test->id_test,
-                'id_alumno'  => $usuario->id_usuario, 
-                'puntuacion' => $resultado['nota'], 
-                'tipo'       => $test->tipo
-            ]);
+
+            $puntuacion = $test->tipo === 'examen' && $test->examen->fecha_apertura->addMinutes($test->examen->duracion)->addSeconds(10) < now()
+                ? 0
+                : $resultado['nota'];
+
+                Puntuacion::create([
+                    'id_test'    => $test->id_test,
+                    'id_alumno'  => $usuario->id_usuario, 
+                    'puntuacion' => $puntuacion,
+                    'tipo'       => $test->tipo
+                ]);
         }
 
         $preguntasMezcladas = $this->testService->aleatorizarPreguntas($preguntas, $test->id_test);
@@ -61,7 +68,7 @@ class RealizarTestController extends Controller
             'modulo' => $modulo,
             'test'   => $test,
             'estado' => $resultado['informe'], 
-            'nota'   => $resultado['nota']
+            'nota'   => $puntuacion,
         ]);
     }
 }

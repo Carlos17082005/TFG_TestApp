@@ -108,6 +108,13 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
                 // Crear test
                 Route::post('/{modulo}/tests', 'store')->name('profesor.tests.store');
 
+
+                /////////////////////////////////////////////////////////////////////
+                // Guardar borrador del test en sesión antes de ir a preguntas
+                // crear test borrador
+                Route::post('/{modulo}/tests/borrador/nuevo', 'borrador')->name('profesor.tests.borrador.nuevo');
+
+
                 // Mostrar formulario para editar tests
                 Route::get('/{modulo}/tests/{test}/edit', 'edit')->name('profesor.tests.edit');
 
@@ -116,6 +123,21 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
 
                 // Eliminar test
                 Route::delete('/{modulo}/tests/{test}', 'destroy')->name('profesor.tests.destroy');
+            
+
+                /////////////////////////////////////////////////////////////////////
+                // Guardar borrador del test en sesión antes de ir a preguntas
+                // editar test borrador
+                Route::post('/{modulo}/tests/{test}/borrador', 'borrador')->name('profesor.tests.borrador');
+            });
+
+            // =====================
+            // ==== HACER TESTS ====
+            // =====================
+            Route::controller(RealizarTestController::class)->group(function() {
+                Route::get('/modulo/{modulo}/test/{test}/iniciar', 'iniciarTest')->name('profesor.tests.iniciar');
+                Route::get('/modulo/{modulo}/test/{test}/realizar', 'probarTest')->name('profesor.tests.realizar');
+                Route::post('/modulo/{modulo}/test/{test}/realizar', 'correccionTest')->name('profesor.tests.corregir');
             });
 
             // =====================================
@@ -131,6 +153,11 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
 
                 // Eliminar alumnos del módulo
                 Route::delete('/{modulo}/alumnos/{alumno}', 'destroy')->name('profesor.alumnos.destroy');
+
+
+                /////////////////////////////////////////////////////////////////////////////////////
+                // Historial
+                Route::get('/{modulo}/historial', 'historial')->name('profesor.historial');
             });
 
         });
@@ -154,6 +181,26 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
             // test
             Route::get('/{modulo}/examen', [AlumnoTestController::class, 'examenes'])->name('alumno.tests.examen');
             Route::get('/{modulo}/practica', [AlumnoTestController::class, 'practicas'])->name('alumno.tests.practica');
+
+
+            /////////////////////////////////////////////////////////////////////////////////////
+            // Historial
+            Route::get('/{modulo}/historial', 'historial')->name('alumno.historial');
+
+            /////////////////////////////////////////////////////////////////////////////////////
+            // Ajustes
+
+            Route::get('/{modulo}/ajustes', 'ajustes')->name('alumno.ajustes');
+            Route::delete('/{modulo}/ajustes/abandonar', 'abandonar')->name('alumno.ajustes.abandonar');
+            
+            // ===================
+            // === HACER TESTS ===
+            // ===================
+            Route::controller(RealizarTestController::class)->group(function() {
+                Route::get('/modulo/{modulo}/test/{test}/iniciar', 'iniciarTest')->name('alumno.tests.iniciar');
+                Route::get('/modulo/{modulo}/test/{test}/realizar', 'probarTest')->name('alumno.tests.realizar')->middleware('alumnoExamen');
+                Route::post('/modulo/{modulo}/test/{test}/realizar', 'correccionTest')->name('alumno.tests.corregir');
+            });
         });
 
         Route::controller(AlumnoModuloController::class)->group(function() {
@@ -167,15 +214,5 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
     // Cerrar sesión
 
     Route::get('/logout', 'logout')->name('auth.logout');
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // test para ambos usuarios
-    
-    Route::controller(RealizarTestController::class)->group(function() {
-        Route::get('/modulo/{modulo}/test/{test}/iniciar', 'iniciarTest')->name('tests.iniciar');
-        Route::get('/modulo/{modulo}/test/{test}/realizar', 'probarTest')->name('tests.realizar');
-        Route::post('/modulo/{modulo}/test/{test}/realizar', 'correccionTest')->name('tests.corregir');
-    });
     Route::post('/logout', 'logout')->name('auth.logout');
 });

@@ -3,7 +3,7 @@
     $respUsuario = $estado['usuario'] ?? '';
     $esCorrecta  = $estado && $estado['puntuacion'] >= 1.0;
 
-    $class = 'input-text';
+    $class = '';
     if ($estado) {
         $class .= $esCorrecta ? ' correct-bg' : ' incorrect-bg';
     }

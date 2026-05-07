@@ -129,7 +129,7 @@
                         
                         <input type="text" name="columna_a[]" x-model="pareja.a" placeholder="Concepto A" :required="tipo_pregunta === 'conecta'" :disabled="tipo_pregunta !== 'conecta'">
                         
-                        <span><i class="fas fa-arrow-right"></i> &rarr; </span>  <!-- flecha puramente visual -->
+                        <span> &rarr; </span>  <!-- flecha puramente visual -->
                         
                         <input type="text" name="columna_b[]" x-model="pareja.b" placeholder="Definición B" :required="tipo_pregunta === 'conecta'" :disabled="tipo_pregunta !== 'conecta'">
                         
@@ -153,9 +153,10 @@
                 <br><br>
 
                 <div>
+                    <input type="search" x-model="busqueda_etiqueta" placeholder="Buscar etiqueta existente...">
                     <select x-model="id_seleccionada">
                         <option value="">Selecciona una existente...</option>
-                        <template x-for="etiqueta in etiquetas_bd" :key="etiqueta.id_etiqueta">
+                        <template x-for="etiqueta in etiquetas_filtradas" :key="etiqueta.id_etiqueta">
                             <option :value="etiqueta.id_etiqueta" x-text="etiqueta.nombre"></option>
                         </template>
                     </select>
@@ -208,6 +209,27 @@
 
                 id_seleccionada: '',
                 nombre_nueva: '',
+                busqueda_etiqueta:  '',
+
+                // Etiquetas filtradas según la búsqueda, excluyendo las ya añadidas
+                get etiquetas_filtradas() {
+                    let busqueda = this.normalizar(this.busqueda_etiqueta);
+                    return this.etiquetas_bd.filter(e => {
+                        let yaAgregada = this.etiquetas_agregadas.some(a => a.id === e.id_etiqueta);
+                        let coincide   = busqueda === '' || this.normalizar(e.nombre).includes(busqueda);
+                        return !yaAgregada && coincide;
+                    });
+                },
+
+                normalizar(texto) {
+                    return texto
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^\w\s]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                },
 
                 agregarExistente() {
                     if (!this.id_seleccionada) return;
@@ -217,6 +239,7 @@
                         this.etiquetas_agregadas.push({ id: tag.id_etiqueta, nombre: tag.nombre, es_nueva: false });
                     }
                     this.id_seleccionada = ''; 
+                    this.busqueda_etiqueta  = '';
                 },
 
                 agregarNueva() {

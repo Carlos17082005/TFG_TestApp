@@ -49,4 +49,41 @@ class AlumnoModuloController extends Controller
             return back()->withErrors(['error' => 'Error al matricularse, inténtalo de nuevo.']);
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Historial
+    public function historial(Modulo $modulo) {
+        try {
+            $alumno = Auth::user()->alumno;
+            $puntuaciones = $modulo->puntuaciones()
+                ->where('puntuaciones.id_alumno', $alumno->id_alumno)
+                ->with(['test'])
+                ->orderBy('fecha', 'desc')
+                ->get();
+
+            return view('usuario.historial', compact('puntuaciones', 'modulo'));
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'No se ha podido acceder al historial'. $e->getMessage()]);
+        }
+    }  
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Ajustes
+    public function ajustes(Modulo $modulo) {
+        return view('usuario.alumno.ajustes', compact('modulo'));
+    }
+
+    // Abandonar el módulo
+    public function abandonar(Modulo $modulo) {
+        try {
+            $alumno = Auth::user()->alumno;
+
+            $alumno->modulos()->detach($modulo->id_modulo);
+
+            return redirect()->route('inicio.dashboardAlumno.mostrar');
+        } catch(\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
 }

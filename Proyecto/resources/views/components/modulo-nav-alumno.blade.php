@@ -17,7 +17,7 @@
         <h2>{{ $moduloActual->ciclo }} {{ $moduloActual->modulo }}</h2>
         <a href="{{ route('alumno.tests.examen', $moduloActual->id_modulo) }}"><button type="button">Examenes</button></a>
         <a href="{{ route('alumno.tests.practica', $moduloActual->id_modulo) }}"><button type="button">Ejercicios</button></a>
-        <a href=""><button type="button">Historial</button></a>
-        <a href=""><button type="button">Ajustes</button></a>
+        <a href="{{ route('alumno.historial', $moduloActual->id_modulo) }}"><button type="button">Historial</button></a>
+        <a href="{{ route('alumno.ajustes', $moduloActual->id_modulo) }}"><button type="button">Ajustes</button></a>
     @endif
 </nav>

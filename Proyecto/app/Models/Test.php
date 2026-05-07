@@ -29,4 +29,8 @@ class Test extends Model
     public function puntuaciones() {
         return $this->hasMany(Puntuacion::class, 'id_test');
     }
+
+    public function examen() {
+    return $this->hasOne(Examen::class, 'id_test', 'id_test');
+}
 }

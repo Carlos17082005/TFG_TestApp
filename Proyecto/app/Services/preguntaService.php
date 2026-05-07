@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Pregunta;
 use App\Models\Etiqueta;
+use App\Models\Modulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -48,7 +49,6 @@ class PreguntaService
         });
     }
 
-    // Tu antiguo método comprobarPregunta, ahora vive aquí
     private function prepararDatos(Request $request)
     {
         $validated = $request->validate([
@@ -114,5 +114,19 @@ class PreguntaService
         }
 
         return [$validated, $contenido, $etiquetas];
+    }
+
+    public function redirigir(Modulo $modulo) {
+        $borrador = session(\App\Http\Controllers\PreguntaController::SESSION_KEY);
+
+        if ($borrador && ($borrador['origen_modulo'] ?? null) === $modulo->id_modulo) {
+            $idTest = $borrador['origen_test'] ?? null;
+
+            if ($idTest) {
+                return redirect()->route('profesor.tests.edit', [$modulo->id_modulo, $idTest]);
+            }
+            return redirect()->route('profesor.tests.create', $modulo->id_modulo);
+        }
+        return redirect()->route('profesor.preguntas.index', $modulo->id_modulo);
     }
 }

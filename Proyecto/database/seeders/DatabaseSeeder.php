@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             TestSeeder::class,
             AlumnoModuloSeeder::class,
             PuntuacionSeeder::class,
+            ExamenSeeder::class
         ]);
     }
 }

@@ -16,11 +16,11 @@ class PuntuacionSeeder extends Seeder
     {
         // Perfiles de rendimiento por alumno (nota base ± variación)
         $perfiles = [
-            'ana.fernandez@alumno.es'   => ['base' => 8.0, 'variacion' => 1.5],
-            'marco.rodriguez@alumno.es'  => ['base' => 6.5, 'variacion' => 2.0],
-            'sofia.lopez@alumno.es'      => ['base' => 9.0, 'variacion' => 0.8],
-            'javier.moreno@alumno.es'    => ['base' => 5.5, 'variacion' => 2.5],
-            'paula.jimenez@alumno.es'    => ['base' => 7.0, 'variacion' => 1.5],
+            'alumno1@gmail.com'   => ['base' => 8.0, 'variacion' => 1.5],
+            'alumno2@gmail.com'  => ['base' => 6.5, 'variacion' => 2.0],
+            'alumno3@gmail.com'      => ['base' => 9.0, 'variacion' => 0.8],
+            'alumno4@gmail.com'    => ['base' => 5.5, 'variacion' => 2.5],
+            'alumno5@gmail.com'    => ['base' => 7.0, 'variacion' => 1.5],
         ];
 
         $usuarios = Usuario::whereIn('email', array_keys($perfiles))->get()->keyBy('email');

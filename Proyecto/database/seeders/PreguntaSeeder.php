@@ -33,13 +33,13 @@ class PreguntaSeeder extends Seeder
 
         $preguntasProg = [
             // 1
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿PHP es un lenguaje de tipado fuerte?', 'respuesta' => 'false'], 'etiquetas' => ['variables']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿PHP es un lenguaje de tipado fuerte?', 'respuesta' => 'falso'], 'etiquetas' => ['variables']],
             // 2
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Los arrays en PHP pueden contener valores de distintos tipos?', 'respuesta' => 'true'], 'etiquetas' => ['arrays']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Los arrays en PHP pueden contener valores de distintos tipos?', 'respuesta' => 'verdadero'], 'etiquetas' => ['arrays']],
             // 3
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Una función puede devolver más de un valor en PHP?', 'respuesta' => 'false'], 'etiquetas' => ['funciones']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Una función puede devolver más de un valor en PHP?', 'respuesta' => 'falso'], 'etiquetas' => ['funciones']],
             // 4
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿En PHP los índices de los arrays empiezan en 0?', 'respuesta' => 'true'], 'etiquetas' => ['arrays']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿En PHP los índices de los arrays empiezan en 0?', 'respuesta' => 'verdadero'], 'etiquetas' => ['arrays']],
             // 5
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué función se usa para contar los elementos de un array en PHP?', 'respuesta' => 'count'], 'etiquetas' => ['arrays', 'funciones']],
             // 6
@@ -69,7 +69,7 @@ class PreguntaSeeder extends Seeder
             // 18
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué palabra clave se usa en PHP para heredar de otra clase?', 'respuesta' => 'extends'], 'etiquetas' => ['poo']],
             // 19
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El bucle foreach puede modificar los valores del array original si se usa por referencia?', 'respuesta' => 'true'], 'etiquetas' => ['bucles', 'arrays']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El bucle foreach puede modificar los valores del array original si se usa por referencia?', 'respuesta' => 'verdadero'], 'etiquetas' => ['bucles', 'arrays']],
             // 20
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué función elimina el último elemento de un array en PHP?', 'respuesta' => 'array_pop'], 'etiquetas' => ['arrays', 'funciones']],
         ];
@@ -86,13 +86,13 @@ class PreguntaSeeder extends Seeder
 
         $preguntasBBDD = [
             // 1
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La clave primaria puede contener valores NULL?', 'respuesta' => 'false'], 'etiquetas' => ['sql']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La clave primaria puede contener valores NULL?', 'respuesta' => 'falso'], 'etiquetas' => ['sql']],
             // 2
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿SELECT * devuelve todas las columnas de una tabla?', 'respuesta' => 'true'], 'etiquetas' => ['sql']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿SELECT * devuelve todas las columnas de una tabla?', 'respuesta' => 'verdadero'], 'etiquetas' => ['sql']],
             // 3
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Un INNER JOIN devuelve los registros sin coincidencia de ambas tablas?', 'respuesta' => 'false'], 'etiquetas' => ['joins']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Un INNER JOIN devuelve los registros sin coincidencia de ambas tablas?', 'respuesta' => 'falso'], 'etiquetas' => ['joins']],
             // 4
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La Primera Forma Normal elimina grupos repetidos?', 'respuesta' => 'true'], 'etiquetas' => ['normalizacion']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La Primera Forma Normal elimina grupos repetidos?', 'respuesta' => 'verdadero'], 'etiquetas' => ['normalizacion']],
             // 5
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué cláusula se usa para filtrar filas en SQL?', 'respuesta' => 'WHERE'], 'etiquetas' => ['sql']],
             // 6
@@ -122,7 +122,7 @@ class PreguntaSeeder extends Seeder
             // 18
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué cláusula filtra grupos en SQL (equivalente a WHERE para GROUP BY)?', 'respuesta' => 'HAVING'], 'etiquetas' => ['sql']],
             // 19
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La clave foránea garantiza la integridad referencial?', 'respuesta' => 'true'], 'etiquetas' => ['sql', 'normalizacion']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La clave foránea garantiza la integridad referencial?', 'respuesta' => 'verdadero'], 'etiquetas' => ['sql', 'normalizacion']],
             // 20
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué forma normal elimina las dependencias transitivas?', 'respuesta' => 'tercera forma normal'], 'etiquetas' => ['normalizacion']],
         ];
@@ -139,13 +139,13 @@ class PreguntaSeeder extends Seeder
 
         $preguntasWeb = [
             // 1
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿HTML es un lenguaje de programación?', 'respuesta' => 'false'], 'etiquetas' => ['html']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿HTML es un lenguaje de programación?', 'respuesta' => 'falso'], 'etiquetas' => ['html']],
             // 2
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La etiqueta <br> sirve para hacer un salto de línea en HTML?', 'respuesta' => 'true'], 'etiquetas' => ['html']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿La etiqueta <br> sirve para hacer un salto de línea en HTML?', 'respuesta' => 'verdadero'], 'etiquetas' => ['html']],
             // 3
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿CSS puede aplicarse directamente dentro de un elemento HTML?', 'respuesta' => 'true'], 'etiquetas' => ['css']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿CSS puede aplicarse directamente dentro de un elemento HTML?', 'respuesta' => 'verdadero'], 'etiquetas' => ['css']],
             // 4
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿JavaScript puede modificar el DOM de una página web?', 'respuesta' => 'true'], 'etiquetas' => ['javascript']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿JavaScript puede modificar el DOM de una página web?', 'respuesta' => 'verdadero'], 'etiquetas' => ['javascript']],
             // 5
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué etiqueta HTML se usa para incluir un fichero CSS externo?', 'respuesta' => 'link'], 'etiquetas' => ['html', 'css']],
             // 6
@@ -175,7 +175,7 @@ class PreguntaSeeder extends Seeder
             // 18
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué método se usa en JavaScript para añadir un evento a un elemento?', 'respuesta' => 'addEventListener'], 'etiquetas' => ['javascript']],
             // 19
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Las etiquetas HTML distinguen entre mayúsculas y minúsculas?', 'respuesta' => 'false'], 'etiquetas' => ['html']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Las etiquetas HTML distinguen entre mayúsculas y minúsculas?', 'respuesta' => 'falso'], 'etiquetas' => ['html']],
             // 20
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué propiedad CSS se usa para ocultar un elemento manteniendo su espacio?', 'respuesta' => 'visibility'], 'etiquetas' => ['css']],
         ];
@@ -192,13 +192,13 @@ class PreguntaSeeder extends Seeder
 
         $preguntasSO = [
             // 1
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Linux es un sistema operativo de código abierto?', 'respuesta' => 'true'], 'etiquetas' => ['linux']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Linux es un sistema operativo de código abierto?', 'respuesta' => 'verdadero'], 'etiquetas' => ['linux']],
             // 2
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando rm -rf elimina archivos y carpetas de forma recursiva sin confirmación?', 'respuesta' => 'true'], 'etiquetas' => ['comandos']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando rm -rf elimina archivos y carpetas de forma recursiva sin confirmación?', 'respuesta' => 'verdadero'], 'etiquetas' => ['comandos']],
             // 3
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El superusuario en Linux se llama "admin"?', 'respuesta' => 'false'], 'etiquetas' => ['linux']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El superusuario en Linux se llama "admin"?', 'respuesta' => 'falso'], 'etiquetas' => ['linux']],
             // 4
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando ls muestra los archivos del directorio actual?', 'respuesta' => 'true'], 'etiquetas' => ['comandos']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando ls muestra los archivos del directorio actual?', 'respuesta' => 'verdadero'], 'etiquetas' => ['comandos']],
             // 5
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando se usa para cambiar de directorio en Linux?', 'respuesta' => 'cd'], 'etiquetas' => ['comandos']],
             // 6
@@ -228,7 +228,7 @@ class PreguntaSeeder extends Seeder
             // 18
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando instala paquetes en distribuciones basadas en Debian?', 'respuesta' => 'apt install'], 'etiquetas' => ['linux', 'comandos']],
             // 19
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El símbolo ~ representa el directorio home del usuario actual en Linux?', 'respuesta' => 'true'], 'etiquetas' => ['linux']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El símbolo ~ representa el directorio home del usuario actual en Linux?', 'respuesta' => 'verdadero'], 'etiquetas' => ['linux']],
             // 20
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando permite ver y cambiar los permisos de un archivo en Linux?', 'respuesta' => 'chmod'], 'etiquetas' => ['linux', 'comandos']],
         ];
@@ -245,13 +245,13 @@ class PreguntaSeeder extends Seeder
 
         $preguntasEdes = [
             // 1
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Git es un sistema de control de versiones distribuido?', 'respuesta' => 'true'], 'etiquetas' => ['git']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Git es un sistema de control de versiones distribuido?', 'respuesta' => 'verdadero'], 'etiquetas' => ['git']],
             // 2
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando git push sube los cambios al repositorio remoto?', 'respuesta' => 'true'], 'etiquetas' => ['git']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿El comando git push sube los cambios al repositorio remoto?', 'respuesta' => 'verdadero'], 'etiquetas' => ['git']],
             // 3
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿GitHub y Git son lo mismo?', 'respuesta' => 'false'], 'etiquetas' => ['git']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿GitHub y Git son lo mismo?', 'respuesta' => 'falso'], 'etiquetas' => ['git']],
             // 4
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Un IDE integra editor, depurador y compilador en una sola herramienta?', 'respuesta' => 'true'], 'etiquetas' => ['ide']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿Un IDE integra editor, depurador y compilador en una sola herramienta?', 'respuesta' => 'verdadero'], 'etiquetas' => ['ide']],
             // 5
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando de Git guarda los cambios en el área de preparación?', 'respuesta' => 'git add'], 'etiquetas' => ['git']],
             // 6
@@ -281,7 +281,7 @@ class PreguntaSeeder extends Seeder
             // 18
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando inicializa un repositorio Git en un directorio?', 'respuesta' => 'git init'], 'etiquetas' => ['git']],
             // 19
-            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿git stash guarda temporalmente los cambios sin hacer commit?', 'respuesta' => 'true'], 'etiquetas' => ['git']],
+            ['tipo' => 'booleana', 'contenido' => ['enunciado' => '¿git stash guarda temporalmente los cambios sin hacer commit?', 'respuesta' => 'verdadero'], 'etiquetas' => ['git']],
             // 20
             ['tipo' => 'texto', 'contenido' => ['enunciado' => '¿Qué comando muestra el historial de commits en Git?', 'respuesta' => 'git log'], 'etiquetas' => ['git']],
         ];

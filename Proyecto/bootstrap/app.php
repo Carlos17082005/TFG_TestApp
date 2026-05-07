@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'alumno'   => \App\Http\Middleware\EsAlumno::class,
             'moduloProfesor'   => \App\Http\Middleware\ModuloPerteneceProfesor::class,
             'moduloAlumno' => \App\Http\Middleware\ModuloPerteneceAlumno::class,
+            'alumnoExamen' => \App\Http\Middleware\AlumnoTieneAccesoExamen::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
