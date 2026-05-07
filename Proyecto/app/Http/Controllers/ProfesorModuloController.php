@@ -94,4 +94,11 @@ class ProfesorModuloController extends Controller {
             return back()->withErrors(['error' => 'No se ha podido eliminar el módulo, vuelve a intentarlo']);
         }
     }
+
+    public function show($id){
+        // Buscamos el módulo por su ID
+        $modulo = Modulo::find($id);
+        // Se envía a la vista
+        return view('usuario.profesor.dashboard', ['modulo' => $modulo]);
+    }
 }

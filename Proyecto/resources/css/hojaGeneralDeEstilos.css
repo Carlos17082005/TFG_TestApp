@@ -26,16 +26,40 @@ CSS para REALIZAR TEST
     display: block;
 }
 
+/* ####################################################################################################
+            VARIABLES DEL CSS
+#################################################################################################### */
+:root {
+  --borde-input: black;
+  --borde-input-reslatado: #550cc1;
+
+  /* Color del Modulo de la Base de Datos */
+  --color-modulo: {{ $modulo->color ?? '#4f46e5' }};
+}
 
 /* ####################################################################################################
             CSS GENERAL
 #################################################################################################### */
 body{
-    margin: 100px;
+    margin-left: 30px;
 }
 
 h1{
-    color: blueviolet;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    color: black;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 500;
     font-size: 50px;
 }
+
+input {
+  border: 2px solid var(--borde-input);
+  outline: none;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+input:focus {
+  border-color: var(--borde-input-reslatado);
+}
+
