@@ -124,3 +124,46 @@ div.agrupado_encabezado{
   gap: 20px;
   justify-content: start;
 }
+
+div.modulo_con_color{
+  border: var(--color-tema-general) solid 5px;
+  padding: 20px;
+  padding-top: 0px;
+  border-radius: 30px;
+  display: grid;
+  place-items: center;
+  min-width: 300px;
+  max-width: 1000px;
+  min-height: 300px;
+  color: var(--color-modulo);
+}
+
+/* ######## Select ######## */
+select {
+  font-family: "Comic Sans MS";
+  font-size: 1rem;
+  color: black;
+  background-color: white;
+  border: 10px solid var(purple);
+  border-radius: 8px;
+  padding: 8px 36px 8px 12px;
+  cursor: pointer;
+  outline: none;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select:hover {
+  box-shadow: 0 2px 8px rgba(8, 1, 18, 0.2);
+}
+
+select:focus {
+  border-color: var(--btn-hover-color);
+  box-shadow: 0 2px 8px rgba(8, 1, 18, 0.2);
+}
+
+option {
+  font-family: "Comic Sans MS";
+  color: var(--btn-hover-color);
+  padding: 8px;
+}
