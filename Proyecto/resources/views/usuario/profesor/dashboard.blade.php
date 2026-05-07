@@ -6,7 +6,7 @@
     <x-header />
     <x-errores />
     
-    <p>Dashboard profesor {{ Auth::user()->nombre }}</p>
+    <h1>Dashboard profesor {{ Auth::user()->nombre }}</h1>
 
     @if (Auth::user()->profesor->modulos->isEmpty())
         <!-- No tiene ningún módulo -->

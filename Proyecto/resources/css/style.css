@@ -1,0 +1,126 @@
+/* ####################################################################################################
+CSS para REALIZAR TEST
+#################################################################################################### */
+/* 🟢 Clase para resaltar las respuestas correctas */
+.correct-bg {
+    background-color: #d4edda !important;
+    border: 2px solid #28a745 !important;
+    color: #155724 !important;
+    border-radius: 5px;
+}
+
+/* 🔴 Clase para resaltar los fallos del usuario */
+.incorrect-bg {
+    background-color: #f8d7da !important;
+    border: 2px solid #dc3545 !important;
+    color: #721c24 !important;
+    border-radius: 5px;
+}
+
+/* 🟢 Texto extra para chivarle la respuesta correcta si falló (en texto o conecta) */
+.correct-text {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    display: block;
+}
+
+/* ####################################################################################################
+            VARIABLES DEL CSS
+#################################################################################################### */
+:root {
+    /* Color Morado de los Botones y el TEMA POR DEFECTO */
+    --color-tema-general: #550cc1;
+    --btn-color: #630cc1;
+    --btn-hover-color: #30075c;
+  
+    /* Color del Modulo de la Base de Datos */
+    --color-modulo: {{ $modulo->color ?? '#4f46e5' }};
+
+}
+
+/* ####################################################################################################
+            CSS GENERAL
+#################################################################################################### */
+body{
+    margin-left: 30px;
+    font-family: "Comic Sans MS";
+    margin-top: 10px;
+    display: grid;
+    place-items: center;
+}
+/* ######## Títulos ######## */
+h1{
+    color: rgb(255, 255, 255);
+    font-weight: bolder;
+    font-size: 50px;
+    background-color: var(--color-tema-general);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    margin-top: 8px;
+    max-width: fit-content;  
+    padding: 10px;  
+}
+
+h2{
+    color: var(--color-tema-general);
+    font-weight: bold;
+    font-size: 35px;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    max-width: fit-content;
+    padding: 5px;      
+}
+/* ######## Inputs ######## */
+input {
+  border: 2px solid black;
+  outline: none;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  padding: 4px;
+  font-family: "Comic Sans MS";
+}
+
+input:focus {
+  border-color: var(--color-tema-general);
+}
+
+/* ######## Botones ######## */
+button {
+  background-color: var(--btn-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--btn-hover-color);
+  transform: translateY(2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* ######## Conjuntos de Elementos DIV ######## */
+div.agrupado1{
+  border: var(--color-tema-general) solid 5px;
+  padding: 20px;
+  padding-top: 0px;
+  border-radius: 30px;
+  display: grid;
+  place-items: center;
+  width: 50%;
+  min-height: 300px;
+}
+
+div.agrupado_encabezado{
+  display: grid;
+  grid-auto-flow: column;
+  gap: 20px;
+  justify-content: start;
+}
