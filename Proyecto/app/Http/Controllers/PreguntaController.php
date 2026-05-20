@@ -32,7 +32,7 @@ class PreguntaController extends Controller
             return $this->preguntaService->redirigir($modulo);
             
         } catch(\Exception $e) {
-           return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.']);
+           return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
         }        
     }
 

@@ -81,34 +81,42 @@ class PreguntaService
 
     private function prepararDatos(Request $request) {
         $validated = $request->validate([
-            'tipo' => 'required|string|max:255',
+            'tipo'      => 'required|string|max:255',
             'enunciado' => 'required|string|max:255',
 
-            'opciones' => 'nullable|required_if:tipo,multiple|array|min:3',
+            // Múltiple
+            'opciones'   => 'nullable|required_if:tipo,multiple|array|min:3',
             'opciones.*' => 'nullable|required_if:tipo,multiple|string|max:255',
 
-            'columna_a' => 'nullable|required_if:tipo,conecta|array|min:2',
+            // Conecta
+            'columna_a'   => 'nullable|required_if:tipo,conecta|array|min:2',
             'columna_a.*' => 'nullable|required_if:tipo,conecta|string|max:255',
-            'columna_b' => 'nullable|required_if:tipo,conecta|array|min:2',
+            'columna_b'   => 'nullable|required_if:tipo,conecta|array|min:2',
             'columna_b.*' => 'nullable|required_if:tipo,conecta|string|max:255',
 
-            'respuesta' => 'required_unless:tipo,conecta|string|max:255',
+            // Balance (llega como JSON en un campo oculto)
+            'secciones' => 'nullable|required_if:tipo,balance|string',
 
+            // Respuesta (no aplica a conecta ni a balance)
+            'respuesta' => 'required_unless:tipo,conecta,balance|nullable|string|max:255',
+
+            // Etiquetas
             'etiquetas_existentes'   => 'nullable|array',
             'etiquetas_existentes.*' => 'integer|exists:etiquetas,id_etiqueta',
-            
             'etiquetas_nuevas'       => 'nullable|array',
             'etiquetas_nuevas.*'     => 'string|max:255',
 
-            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a|max:10240', // 10MB máx
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a|max:10240', // 10MB máx (va a depender de como se configure el server)
         ]);
 
+        // Construir $contenido según el tipo 
         if ($validated['tipo'] == 'multiple') {
             $contenido = [
                 'enunciado' => $validated['enunciado'],
                 'opciones' => $validated['opciones'],
                 'respuesta' => $validated['respuesta']
             ];
+
         } else if ($validated['tipo'] == 'conecta') {
             $parejas = [];
             foreach ($validated['columna_a'] as $index => $valorA) {
@@ -121,14 +129,38 @@ class PreguntaService
                 'enunciado' => $validated['enunciado'],
                 'parejas'   => $parejas
             ];
-        } else {
+
+        } elseif ($validated['tipo'] === 'balance') {
+            $secciones = json_decode($request->input('secciones'), true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($secciones)) {
+                throw new \InvalidArgumentException('El formato del balance no es válido.');
+            }
+
+            // Limpiamos filas vacías antes de guardar
+            foreach ($secciones as &$sec) {
+                foreach ($sec['bloques'] as &$bloque) {
+                    $bloque['filas'] = array_values(
+                        array_filter($bloque['filas'], fn($f) => !empty($f['nombre']))
+                    );
+                }
+            }
+            unset($sec, $bloque);
+
             $contenido = [
+                'enunciado' => $validated['enunciado'],
+                'secciones' => $secciones,
+            ];
+
+        } else {
+        // booleana, texto
+        $contenido = [
                 'enunciado' => $validated['enunciado'],
                 'respuesta' => $validated['respuesta']
             ];
         }
 
-        // ETIQUETAS
+        // Etiquetas
         $etiquetas = [];
 
         if ($request->has('etiquetas_existentes')) {
@@ -137,9 +169,7 @@ class PreguntaService
 
         if ($request->has('etiquetas_nuevas')) {
             foreach ($request->etiquetas_nuevas as $nombreEtiqueta) {
-                $etiqueta = Etiqueta::firstOrCreate([
-                    'nombre' => strtolower(trim($nombreEtiqueta))
-                ]);
+                $etiqueta = Etiqueta::firstOrCreate(['nombre' => strtolower(trim($nombreEtiqueta))]);
                 $etiquetas[] = $etiqueta->id_etiqueta;
             }
         }
@@ -153,10 +183,9 @@ class PreguntaService
         if ($borrador && ($borrador['origen_modulo'] ?? null) === $modulo->id_modulo) {
             $idTest = $borrador['origen_test'] ?? null;
 
-            if ($idTest) {
-                return redirect()->route('profesor.tests.edit', [$modulo->id_modulo, $idTest]);
-            }
-            return redirect()->route('profesor.tests.create', $modulo->id_modulo);
+            return $idTest
+                ? redirect()->route('profesor.tests.edit', [$modulo->id_modulo, $idTest])
+                : redirect()->route('profesor.tests.create', $modulo->id_modulo);
         }
         return redirect()->route('profesor.preguntas.index', $modulo->id_modulo);
     }

@@ -16,8 +16,7 @@ class TestService
      * para que la vista de resultados pueda mostrarlas en el mismo orden.
      * Si ya existe el orden (navegación atrás), lo reutiliza.
      */
-    public function aleatorizarPreguntas(Collection $preguntas, int $idTest): Collection
-    {
+    public function aleatorizarPreguntas(Collection $preguntas, int $idTest): Collection {
         $key = "test_{$idTest}_orden";
 
         if (!session()->has($key)) {
@@ -41,8 +40,7 @@ class TestService
      * - conecta   → baraja la columna B (los A siempre en orden)
      * - booleana/texto → sin cambios
      */
-    public function aleatorizarOpciones(Pregunta $pregunta): array
-    {
+    public function aleatorizarOpciones(Pregunta $pregunta): array {
         $id        = $pregunta->id_pregunta;
         $tipo      = $pregunta->tipo;
         $contenido = $pregunta->contenido->toArray();
@@ -59,16 +57,14 @@ class TestService
         };
     }
 
-    private function aleatorizarMultiple(array $contenido, string $key): array
-    {
+    private function aleatorizarMultiple(array $contenido, string $key): array {
         $opciones = $contenido['opciones'];
         shuffle($opciones);
         session([$key => $opciones]);
         return array_merge($contenido, ['opciones' => $opciones]);
     }
 
-    private function aleatorizarConecta(array $contenido, string $key): array
-    {
+    private function aleatorizarConecta(array $contenido, string $key): array {
         $columnB = collect($contenido['parejas'])->pluck('b')->shuffle()->toArray();
 
         $parejas = $contenido['parejas'];
@@ -92,8 +88,7 @@ class TestService
         ]);
     }
 
-    private function aplicarOrden(string $tipo, array $contenido, mixed $guardado): array
-    {
+    private function aplicarOrden(string $tipo, array $contenido, mixed $guardado): array {
         return match ($tipo) {
             'multiple' => array_merge($contenido, ['opciones' => $guardado]),
             'conecta'  => array_merge($contenido, [
@@ -105,8 +100,7 @@ class TestService
         };
     }
 
-    public function limpiarSesion(int $idTest, Collection $preguntas): void
-    {
+    public function limpiarSesion(int $idTest, Collection $preguntas): void {
         session()->forget("test_{$idTest}_orden");
 
         foreach ($preguntas as $pregunta) {
@@ -131,8 +125,7 @@ class TestService
      *   informe: array
      * }
      */
-    public function corregir(array $respuestas, Collection $preguntas): array
-    {
+    public function corregir(array $respuestas, Collection $preguntas): array {
         $aciertos = 0.0;
         $informe  = [];
 
@@ -142,7 +135,11 @@ class TestService
             $contenido = $pregunta->contenido->toArray();
 
             $respUsuario  = $respuestas[$id] ?? null;
-            $respCorrecta = $contenido['respuesta'] ?? null;
+            $respCorrecta = match ($tipo) {
+                'balance' => $contenido['secciones'] ?? null,
+                'conecta' => null,
+                default   => $contenido['respuesta'] ?? null,
+            };
 
             $puntuacion = $this->corregirPregunta($tipo, $contenido, $respUsuario, $respCorrecta);
             $aciertos  += $puntuacion;
@@ -166,8 +163,10 @@ class TestService
         ];
     }
 
-    private function corregirPregunta(string $tipo, array $contenido, mixed $respUsuario, mixed $respCorrecta): float
-    {
+    private function corregirPregunta(string $tipo, array $contenido, mixed $respUsuario, mixed $respCorrecta): float {
+        if ($tipo === 'balance') {
+            return $this->corregirBalance($respUsuario, $contenido['secciones'] ?? []);
+        }
         if ($respUsuario === null || $respUsuario === '') {
             return 0.0; 
         }
@@ -182,14 +181,12 @@ class TestService
     }
 
     /** Booleana: comparación exacta (verdadero/falso). */
-    private function corregirExacto(mixed $usuario, mixed $correcta): float
-    {
+    private function corregirExacto(mixed $usuario, mixed $correcta): float {
         return (string)$usuario === (string)$correcta ? 1.0 : 0.0;
     }
 
     /** Múltiple y texto: comparación normalizada. */
-    private function corregirTextoNormalizado(mixed $usuario, mixed $correcta): float
-    {
+    private function corregirTextoNormalizado(mixed $usuario, mixed $correcta): float {
         return $this->normalizar((string)$usuario) === $this->normalizar((string)$correcta)
             ? 1.0
             : 0.0;
@@ -199,8 +196,7 @@ class TestService
      * Conecta: puntuación parcial según pares correctos.
      * El usuario envía [index => texto_b_seleccionado].
      */
-    private function corregirConecta(mixed $usuario, array $parejas): float
-    {
+    private function corregirConecta(mixed $usuario, array $parejas): float {
         if (!is_array($usuario) || empty($parejas)) return 0.0;
 
         $total    = count($parejas);
@@ -216,6 +212,62 @@ class TestService
         return $total > 0 ? $aciertos / $total : 0.0;
     }
 
+    /**
+     * Balance: puntuación parcial fila a fila.
+     *
+     * El usuario envía: [secKey][bloqueIdx][filaIdx] = importeTexto
+     * La clave de sesión no aplica aquí; las secciones vienen de la BD.
+     *
+     * La comparación es numérica para aceptar "1.050", "1050" y "1 050"
+     * como equivalentes.
+     */
+    private function corregirBalance(mixed $usuario, array $secciones): float {
+        if (!is_array($usuario) || empty($secciones)) return 0.0;
+
+        // Construir mapa de respuestas correctas: nombre → [secKey, bloqueIdx, importe]
+        $correctos = [];
+        foreach ($secciones as $sec) {
+            foreach ($sec['bloques'] as $bi => $bloque) {
+                foreach ($bloque['filas'] as $fila) {
+                    if (empty($fila['nombre'])) continue;
+                    $correctos[strtolower(trim($fila['nombre']))] = [
+                        'secKey'  => $sec['key'],
+                        'bi'      => $bi,
+                        'importe' => $fila['importe'] ?? '',
+                    ];
+                }
+            }
+        }
+
+        $total    = count($correctos);
+        $aciertos = 0;
+
+        // Recorrer lo que envió el alumno
+        foreach ($usuario as $secKey => $bloques) {
+            foreach ($bloques as $bi => $filas) {
+                foreach ($filas as $filaU) {
+                    $nombre = strtolower(trim($filaU['nombre'] ?? ''));
+                    if (empty($nombre)) continue;
+
+                    $correcto = $correctos[$nombre] ?? null;
+                    if (!$correcto) continue; // elemento inventado, no puntúa
+
+                    $secOk     = $correcto['secKey'] === $secKey;
+                    $bloqueOk  = (int) $correcto['bi'] === (int) $bi;
+                    $importeOk = abs(
+                        $this->normalizarImporte((string) ($filaU['importe'] ?? '')) -
+                        $this->normalizarImporte((string) $correcto['importe'])
+                    ) < 0.01;
+
+                    if ($secOk && $bloqueOk && $importeOk) {
+                        $aciertos++;
+                    }
+                }
+            }
+        }
+
+        return $total > 0 ? $aciertos / $total : 0.0;
+    }
 
     // =========================================================================
     // UTILIDADES
@@ -231,5 +283,23 @@ class TestService
             "'"=>"'","'"=>"'",'¿'=>'','¡'=>'',
         ]);
         return preg_replace('/\s+/', ' ', $texto);
+    }
+
+    private function normalizarImporte(string $valor): float {
+        $valor = trim($valor);
+
+        // Si hay coma decimal (formato español): el punto es separador de miles
+        if (str_contains($valor, ',')) {
+            $valor = str_replace('.', '', $valor);   // quitar puntos de miles
+            $valor = str_replace(',', '.', $valor);  // convertir coma decimal
+        } else {
+            // Sin coma: el punto puede ser separador de miles (ej: "1.050") o decimal (ej: "10.5")
+            // Heurística: si hay exactamente un punto y 3 dígitos tras él → miles
+            if (preg_match('/^\d{1,3}\.\d{3}$/', $valor)) {
+                $valor = str_replace('.', '', $valor);
+            }
+        }
+
+        return (float) preg_replace('/[^\d.]/', '', $valor);
     }
 }

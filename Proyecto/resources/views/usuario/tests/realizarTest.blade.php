@@ -77,6 +77,14 @@
                             @case('texto')
                                 @include('usuario.tests.partials._texto', ['id' => $pregunta->id_pregunta, 'estado'=> $estado[$pregunta->id_pregunta] ?? null])
                             @break
+
+                            @case('balance')
+                                @include('usuario.tests.partials._balance', [
+                                    'id'       => $pregunta->id_pregunta,
+                                    'secciones'=> $contenido['secciones'],
+                                    'estado'   => $estado[$pregunta->id_pregunta] ?? null,
+                                ])
+                            @break
                         @endswitch
                     </div>
                 </div>
