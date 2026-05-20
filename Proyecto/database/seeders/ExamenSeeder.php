@@ -16,8 +16,8 @@ class ExamenSeeder extends Seeder
             Examen::create([
                 'id_test'        => $test->id_test,
                 'duracion'       => 60,
-                'fecha_apertura' => now()->subMinutes(10),
-                'fecha_cierre'   => now()->addMinutes(50),
+                'fecha_apertura' => now()->startOfMinute()->subMinutes(10),
+                'fecha_cierre'   => now()->startOfMinute()->addMinutes(50),
             ]);
         }
     }

@@ -98,8 +98,13 @@
 </div>
 
 @if (Auth::user()->alumno && $test->tipo == 'examen' && !isset($estado))
+    @php
+        $segundosHastaCierre = now()->diffInSeconds($test->examen->fecha_cierre);
+        $segundosPorDuracion = $test->examen->duracion * 60;
+        $segundosRestantes = min($segundosHastaCierre, $segundosPorDuracion);
+    @endphp
     <script>
-        var segundosRestantes = {{ $test->examen->duracion * 60 }};
+        var segundosRestantes = {{ $segundosRestantes }};
         if (segundosRestantes > 0) {
             var temporizador = setInterval(() => {
                 var horas = String(Math.floor(segundosRestantes / 3600)).padStart(2, '0');

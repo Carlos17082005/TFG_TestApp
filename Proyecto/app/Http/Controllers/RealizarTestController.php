@@ -47,7 +47,7 @@ class RealizarTestController extends Controller
 
         if ($usuario->rol === 'alumno') { 
 
-            if ($test->tipo === 'examen' && now() > $test->examen->fecha_cierre->addMinutes($test->examen->duracion)->addSeconds(10)) {
+            if ($test->tipo === 'examen' && now() > $test->examen->fecha_cierre->addSeconds(60)) {
                 $puntuacion = 0;
             }
 
