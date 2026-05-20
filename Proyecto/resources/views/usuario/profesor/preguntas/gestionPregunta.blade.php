@@ -100,43 +100,63 @@
         
 
         <div x-show="mostrar_audio" x-cloak class="form-group">
-            <label class="form-label">Audio de la pregunta (Opcional)</label>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <label class="btn btn-secondary" style="cursor: pointer; width: max-content;">
-                    Seleccionar archivo
+
+            {{-- Cabecera: label + botón seleccionar --}}
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                <label class="form-label" style="margin: 0;">Audio de la pregunta (Opcional)</label>
+                <label class="btn btn-secondary" style="cursor: pointer; width: max-content; font-size: 0.85rem; padding: 0.3rem 0.75rem;">
+                    + Seleccionar archivo
                     <input type="file" name="audio" accept="audio/*" style="display: none;" x-ref="audioInput"
                         @change="
                             const file = $event.target.files[0];
                             if (file) {
+                                if ($refs.audioNuevo) { $refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; }
                                 audio_preview_url = URL.createObjectURL(file);
-                                eliminar_audio = false;
                             }
                         ">
                 </label>
-                <span x-text="audio_preview_url ? 'Archivo seleccionado' : 'Ningún archivo seleccionado'"
-                    style="font-size: 0.9rem; color: var(--tx-3);"></span>
             </div>
 
-            <div x-show="audio_preview_url">
-                <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
-                    <audio controls style="flex: 1; min-width: 0;" :src="audio_preview_url"></audio>
-                    <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
-                        @click="audio_preview_url = null; $refs.audioInput.value = ''">&times;</button>
-                </div>
-            </div>
+            {{-- Fila de players --}}
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
 
-            @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
-                <div x-show="!eliminar_audio && !audio_preview_url">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
-                        <audio controls style="flex: 1; min-width: 0;">
-                            <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
-                        </audio>
+                {{-- Audio nuevo (izquierda) --}}
+                <div x-show="audio_preview_url" style="flex: 1; min-width: 260px;"
+                    x-effect="if (!audio_preview_url && $refs.audioNuevo) { $refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; }">
+                    <p style="font-size: 0.8rem; color: var(--tx-3); margin-bottom: 0.4rem;">
+                        @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
+                            Nuevo audio (reemplaza al actual)
+                        @else
+                            Nuevo audio
+                        @endif
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                        <audio x-ref="audioNuevo" controls style="flex: 1; min-width: 0;" :src="audio_preview_url"></audio>
                         <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
-                            @click="eliminar_audio = true">&times;</button>
+                            @click="$refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; audio_preview_url = null; $refs.audioInput.value = ''"
+                            title="Quitar audio nuevo">&times;</button>
                     </div>
                 </div>
-                <input type="hidden" name="eliminar_audio" :value="eliminar_audio ? '1' : '0'">
-            @endif
+
+                {{-- Audio guardado en servidor (derecha), solo en edición --}}
+                @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
+                    <div style="flex: 1; min-width: 260px;"
+                        x-show="!eliminar_audio"
+                        x-effect="if (eliminar_audio && $refs.audioGuardado) { $refs.audioGuardado.pause(); $refs.audioGuardado.currentTime = 0; }">
+                        <p style="font-size: 0.8rem; color: var(--tx-3); margin-bottom: 0.4rem;">Audio actual (guardado)</p>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                            <audio x-ref="audioGuardado" controls style="flex: 1; min-width: 0;">
+                                <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
+                            </audio>
+                            <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
+                                @click="$refs.audioGuardado.pause(); $refs.audioGuardado.currentTime = 0; eliminar_audio = true"
+                                title="Eliminar audio guardado">&times;</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="eliminar_audio" :value="eliminar_audio ? '1' : '0'">
+                @endif
+
+            </div>
         </div>
 
         <div class="form-group" x-show="tipo_pregunta !== ''">
