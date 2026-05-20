@@ -16,13 +16,72 @@
         /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
         --color-modulo-h: {{ $modulo->color }}; 
     }
-    /* UX Si una pregunta está marcada, se muestra en arriba en la lista de preguntas */
-    div[style*="display: flex"] > div:has(input[type="checkbox"]:checked) {
-        order: -1;
+
+    /* Tarjetas banco izquierda */
+    .tarjeta-banco {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid transparent;
+        border-radius: var(--r-sm);
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: border-left-color 0.15s, box-shadow 0.15s, background 0.15s;
     }
-    /* inputs con color del modulo */
-    input:checked{
-        accent-color: var(--color-modulo);
+    .tarjeta-banco:hover {
+        border-left-color: var(--color-modulo);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.13);
+        background: var(--surface-2, #f7f7f9);
+    }
+
+    /* Tarjetas panel derecho seleccionadas */
+    .tarjeta-seleccionada {
+        background: var(--surface);
+        border: 1px solid var(--color-modulo-20, color-mix(in srgb, var(--color-modulo) 20%, transparent));
+        border-left: 3px solid var(--color-modulo);
+        border-radius: var(--r-sm);
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: box-shadow 0.15s, background 0.15s;
+    }
+    .tarjeta-seleccionada:hover {
+        box-shadow: 0 3px 8px rgba(0,0,0,0.13);
+        background: var(--surface-2, #f7f7f9);
+    }
+
+    /* Botón X */
+    .btn-quitar {
+        background: #fde8e8;
+        border: none;
+        color: #c0392b;
+        cursor: pointer;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.4rem;
+        font-size: 1rem;
+        font-weight: bold;
+        line-height: 1;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, color 0.15s, transform 0.1s;
+    }
+    .btn-quitar:hover {
+        background: #c0392b;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .tarjeta-banco--atenuada {
+        background-color:#D4D4D4;
     }
 </style>
 @endpush
@@ -102,6 +161,7 @@
 
         <div x-data="{
                 busqueda: '',
+                seleccionadas: {{ json_encode(array_map('intval', $valuePreguntas)) }},
 
                 normalizar(texto) {
                     if (!texto) return '';
@@ -116,11 +176,9 @@
 
                 get parsed() {
                     let tokens = this.busqueda.trim().toLowerCase().split(/\s+/).filter(Boolean);
-                    
                     let etiquetas = tokens.filter(t => t.startsWith(':')).map(t => this.normalizar(t.slice(1)));
                     let tipo      = this.normalizar((tokens.find(t => t.startsWith('tipo:')) ?? '').slice(5));
                     let texto     = this.normalizar(tokens.filter(t => !t.startsWith(':') && !t.startsWith('tipo:')).join(' '));
-                    
                     return { etiquetas, tipo, texto };
                 },
 
@@ -128,15 +186,26 @@
                     let { etiquetas, tipo, texto } = this.parsed;
                     let enunciadoNorm = this.normalizar(enunciado);
                     let etiquetasNorm = etiquetas_pregunta.map(e => this.normalizar(e));
-
                     if (texto && !enunciadoNorm.includes(texto)) return false;
                     if (tipo  && !tipo_pregunta.includes(tipo)) return false;
                     if (etiquetas.length && !etiquetas.every(e => etiquetasNorm.some(ep => ep.includes(e)))) return false;
-                    
                     return true;
+                },
+
+                toggle(id) {
+                    if (this.seleccionadas.includes(id)) {
+                        this.seleccionadas = this.seleccionadas.filter(s => s !== id);
+                    } else {
+                        this.seleccionadas.push(id);
+                    }
+                },
+
+                estaSeleccionada(id) {
+                    return this.seleccionadas.includes(id);
                 }
             }">
 
+            {{-- Barra de búsqueda + botón --}}
             <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem;">
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">Buscar pregunta en el banco:</label>
@@ -145,33 +214,86 @@
                 <button type="button" class="btn btn-secondary" onclick="gestorPreguntas('{{ route('profesor.preguntas.create', $modulo->id_modulo) }}')">+ Crear pregunta</button>
             </div>
 
-            <div style="display: flex; flex-direction: column; max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.5rem; background: var(--bg);">
-                @foreach ($preguntas as $pregunta)
-                    <div x-data='{ abierta: false, enunciado: @json(strtolower($pregunta->contenido["enunciado"] ?? "")), etiquetas: @json($pregunta->listaEtiquetas->pluck("nombre")->map(fn($n) => strtolower($n))->toArray()), tipo: @json(strtolower($pregunta->tipo)) }'
-                         x-show="coincide(enunciado, etiquetas, tipo)"
-                         style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.8rem; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        
-                        <label style="display: flex; gap: 1rem; align-items: center; width: 100%; cursor: pointer; margin: 0; padding: 0; border: none; background: transparent;">
-                            <input type="checkbox" name="preguntas[]" value="{{ $pregunta->id_pregunta }}" id="pregunta-{{ $pregunta->id_pregunta }}" {{ in_array($pregunta->id_pregunta, $valuePreguntas) ? 'checked' : '' }}>   
-                            <span style="flex: 1; font-weight: 500; font-size: 0.95rem;">{{ $pregunta->contenido['enunciado'] }}</span>
-                            <button type="button" @click.prevent="abierta = !abierta" style="background: none; border: none; color: var(--tx-3); cursor: pointer; padding: 0.2rem;">Ver más</button>
-                        </label>
-                        
-                        <div x-show="abierta" x-cloak style="font-size: 0.85rem; color: var(--tx-2); padding-left: 2rem; border-top: 1px dashed var(--border); padding-top: 0.5rem;">
-                            <strong>Tipo:</strong> {{ ucfirst($pregunta->tipo) }} <br>
-                            <strong>Etiquetas:</strong> 
-                            @forelse ($pregunta->listaEtiquetas as $etiqueta)
-                                <span style="color: var(--color-modulo);">#{{ $etiqueta->nombre }}</span>
-                            @empty
-                                Ninguna
-                            @endforelse
-                            <br>
-                            <button type="button" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-top: 0.5rem;" onclick="gestorPreguntas('{{ route('profesor.preguntas.edit', [$modulo->id_modulo, $pregunta->id_pregunta]) }}')">Editar esta pregunta</button>
-                        </div>
+            {{-- Layout dos columnas --}}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+
+                {{-- Columna izquierda: Banco --}}
+                <div>
+                    <p class="form-label" style="margin-bottom: 0.5rem;">
+                        Banco de preguntas
+                    </p>
+                    <div style="display: flex; flex-direction: column; max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.5rem; background: var(--bg);">
+                        @foreach ($preguntas as $pregunta)
+                            @php $id = $pregunta->id_pregunta; @endphp
+                            <div x-data='{ abierta: false, enunciado: @json(strtolower($pregunta->contenido["enunciado"] ?? "")), etiquetas: @json($pregunta->listaEtiquetas->pluck("nombre")->map(fn($n) => strtolower($n))->toArray()), tipo: @json(strtolower($pregunta->tipo)), id: {{ $id }} }'
+                                x-show="coincide(enunciado, etiquetas, tipo)"
+                                class="tarjeta-banco"
+                                :class="estaSeleccionada(id) ? 'tarjeta-banco--atenuada' : ''">
+
+                                <label style="display: flex; gap: 1rem; align-items: center; width: 100%; cursor: pointer; margin: 0; padding: 0; border: none; background: transparent;">
+                                    <input type="checkbox"
+                                        name="preguntas[]"
+                                        value="{{ $id }}"
+                                        id="pregunta-{{ $id }}"
+                                        :checked="estaSeleccionada(id)"
+                                        @change="toggle(id)">
+                                    <span style="flex: 1; font-weight: 500; font-size: 0.95rem;">{{ $pregunta->contenido['enunciado'] }}</span>
+                                    <button type="button" @click.prevent="abierta = !abierta" style="background: none; border: none; color: var(--tx-3); cursor: pointer; padding: 0.2rem;">Ver más</button>
+                                </label>
+
+                                <div x-show="abierta" x-cloak style="font-size: 0.85rem; color: var(--tx-2); padding-left: 2rem; border-top: 1px dashed var(--border); padding-top: 0.5rem;">
+                                    <strong>Tipo:</strong> {{ ucfirst($pregunta->tipo) }} <br>
+                                    <strong>Etiquetas:</strong>
+                                    @forelse ($pregunta->listaEtiquetas as $etiqueta)
+                                        <span style="color: var(--color-modulo);">#{{ $etiqueta->nombre }}</span>
+                                    @empty
+                                        Ninguna
+                                    @endforelse
+                                    <br>
+                                    <button type="button" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-top: 0.5rem;" onclick="gestorPreguntas('{{ route('profesor.preguntas.edit', [$modulo->id_modulo, $pregunta->id_pregunta]) }}')">Editar esta pregunta</button>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
-        </div>
+                </div>
+
+                {{-- Columna derecha: Seleccionadas --}}
+                <div>
+                    <p class="form-label" style="margin-bottom: 0.5rem;">
+                        Preguntas seleccionadas (<span x-text="seleccionadas.length"></span>)
+                    </p>
+                    <div style="display: flex; flex-direction: column; max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.5rem; background: var(--bg);">
+
+                        {{-- Mensaje vacío --}}
+                        <p x-show="seleccionadas.length === 0"
+                        style="color: var(--tx-3); font-size: 0.9rem; text-align: center; padding: 2rem 1rem; margin: 0;">
+                            Ninguna pregunta seleccionada todavía.
+                        </p>
+
+                        @foreach ($preguntas as $pregunta)
+                            @php $id = $pregunta->id_pregunta; @endphp
+                            <div x-data='{ enunciado: @json(strtolower($pregunta->contenido["enunciado"] ?? "")), etiquetas: @json($pregunta->listaEtiquetas->pluck("nombre")->map(fn($n) => strtolower($n))->toArray()), tipo: @json(strtolower($pregunta->tipo)) }'
+                                x-show="estaSeleccionada({{ $id }}) && coincide(enunciado, etiquetas, tipo)"
+                                x-cloak
+                                class="tarjeta-seleccionada">
+
+                                <span style="flex: 1; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $pregunta->contenido['enunciado'] }}
+                                </span>
+
+                                <button type="button"
+                                        @click="toggle({{ $id }})"
+                                        title="Quitar pregunta"
+                                        class="btn-quitar">
+                                    ✕
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+            </div>{{-- fin grid --}}
+        </div>{{-- fin x-data --}}
 
         <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">{{ $edicion ? 'Actualizar Test' : 'Crear Test' }}</button>
         <button type="button" class="boton_cancelar btn btn-primary" onclick="if(confirm('¿Seguro que NO quieres Guardar los Cambios?')) { history.back(); }">

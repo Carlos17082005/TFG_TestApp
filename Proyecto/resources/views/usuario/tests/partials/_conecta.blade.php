@@ -26,7 +26,7 @@
                             @endforeach
                         </select>
                         @if ($estado && !$esCorrecta)
-                            <span class="correct-text">Correcta: {{ $letraCorrecta }}</span>
+                            <span class="correct-text" style="color: rgb(10, 10, 181)">Correcta: <strong style="font-stretch: expanded">{{ $letraCorrecta }}</strong></span>
                         @endif
                     </td>
                     <td style="padding: 0.5rem 1rem;"><strong>{{ $loop->iteration }}.</strong> {{ $pareja['a'] }}</td>

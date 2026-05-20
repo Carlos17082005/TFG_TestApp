@@ -118,6 +118,13 @@ h2 { font-size: 1.5rem; margin-bottom: 1rem; }
     color: #fff;
 }
 
+/* Botones uno al lado del otro en banco de preguntas*/
+.acciones-pregunta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 /* FORMULARIOS */
 .form-card {
     display: flex;
@@ -210,5 +217,22 @@ span.volver_negrita{
 }
 
 /* FEEDBACK */
-.correct-bg { background-color: var(--success-bg) !important; border-color: var(--success) !important; color: #065F46 !important; }
-.incorrect-bg { background-color: var(--error-bg) !important; border-color: var(--error) !important; color: #991B1B !important; }
+.correct-bg { 
+    background-color: var(--success-bg);
+    border-color: var(--success) !important; 
+    color: #065F46 !important; 
+}
+
+.incorrect-bg { 
+    background-color: var(--error-bg) ; 
+    border-color: var(--error) !important; 
+    color: #991B1B !important; 
+}
+
+.azulado-bg { 
+    background-color: rgba(0, 106, 255, 0.257) !important; 
+    border-color: rgba(46, 46, 189, 0.599) !important; 
+    color: #0c007d !important; 
+}
+
+
