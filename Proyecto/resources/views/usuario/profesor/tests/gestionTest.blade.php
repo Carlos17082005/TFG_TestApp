@@ -49,7 +49,25 @@
 
     <h1 style="text-align: left;">{{ $edicion ? 'Editar Test' : 'Crear Test' }}</h1>
 
-    <form method="POST" action="{{ $accion }}" class="form-card">
+    {{-- Inicializamos los estados de Alpine con una función que evalúa estrictamente el input numérico --}}
+    <form method="POST" action="{{ $accion }}" class="form-card" 
+          x-data="{ 
+              adicional: false, 
+              preguntasAMostrar: '{{ old('preguntas_a_mostrar', $test->preguntas_a_mostrar ?? '') }}',
+              aleatorio: {{ old('aleatorio', isset($test) ? $test->aleatorio : true) ? 'true' : 'false' }},
+              correccion: {{ old('correccion', isset($test) ? $test->correccion : true) ? 'true' : 'false' }},
+              
+              get limitActivo() {
+                  return this.preguntasAMostrar !== '' && this.preguntasAMostrar !== null && parseInt(this.preguntasAMostrar) > 0;
+              }
+          }" 
+          x-init="
+              if (limitActivo) { aleatorio = true; }
+              $watch('preguntasAMostrar', () => { 
+                  if (limitActivo) { aleatorio = true; } 
+              })
+          "
+          style="position: relative;">
         @csrf 
         @if($edicion) @method('PUT') @endif
 
@@ -61,6 +79,38 @@
         <div class="form-group">
             <label class="form-label">Descripción</label>
             <textarea name="descripcion" class="form-input" required>{{ trim($valueDescripcion) }}</textarea>
+        </div>
+
+        <div class="form-group" style="position: absolute; top: 1.5rem; right: 1.5rem;">
+            <button type="button"
+                    @click="adicional = !adicional"
+                    style="background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--color-modulo); font-weight: bold; font-family: var(--font);"
+                    x-text="adicional ? 'Ocultar ajustes' : 'Ajustes adicionales'">
+            </button>
+        </div>
+        
+        <div x-show="adicional" x-cloak class="form-group" style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2);">
+            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                {{-- Si limitActivo es true, el checkbox se desactiva y no envía datos. Por lo tanto, el input hidden suple enviando un '1' a la BD --}}
+                <input type="hidden" name="aleatorio" :value="limitActivo ? '1' : '0'">
+                <input type="checkbox" name="aleatorio" id="aleatorio" value="1" 
+                       x-model="aleatorio"
+                       :disabled="limitActivo">
+                <label for="aleatorio" class="form-label" style="margin: 0;">Orden de las preguntas aleatorio</label>
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <input type="hidden" name="correccion" value="0">
+                <input type="checkbox" name="correccion" id="correccion" value="1" x-model="correccion">
+                <label for="correccion" class="form-label" style="margin: 0;">Mostrar correccion</label>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <label for="preguntas_a_mostrar" class="form-label">Número de preguntas a mostrar (Opcional) (Se seleccionará las preguntas de forma aleatoria)</label>
+                <input type="number" name="preguntas_a_mostrar" id="preguntas_a_mostrar" class="form-input" 
+                       x-model="preguntasAMostrar" 
+                       placeholder="Ej: 15 (Si se deja vacío, se mostrarán todas)">
+            </div>
         </div>
 
         <div class="form-group" x-data="{ tipo: '{{ $valueTipo }}' }">

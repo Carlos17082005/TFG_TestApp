@@ -13,9 +13,8 @@ class RealizarTestController extends Controller
 {
     public function __construct(protected TestService $testService) {}
 
-    // --------------------------------------------------------------------------------
-    // PROBAR
     public function iniciarTest(Modulo $modulo, Test $test) {
+        // Al iniciar se limpia la sesión por completo, forzando un nuevo sorteo/mezcla aleatoria
         $this->testService->limpiarSesion($test->id_test, $test->preguntas);
         session(['test_inicio_' . $test->id_test => now()]);
         $ruta = Auth::user()->rol === 'profesor' ? 'profesor.tests.realizar' : 'alumno.tests.realizar';
@@ -23,14 +22,15 @@ class RealizarTestController extends Controller
     }
 
     public function probarTest(Modulo $modulo, Test $test) {
-        $preguntasOriginales = $test->preguntas;
-        $preguntasMezcladas = $this->testService->aleatorizarPreguntas($preguntasOriginales, $test->id_test);
+        // Obtenemos el listado respetando preguntas_a_mostrar y aleatorio
+        $preguntasProcesadas = $this->testService->prepararPreguntasTest($test);
 
-        foreach ($preguntasMezcladas as $pregunta) {
+        // Mezclamos las opciones internas de cada pregunta
+        foreach ($preguntasProcesadas as $pregunta) {
             $pregunta->contenido = $this->testService->aleatorizarOpciones($pregunta);
         }
 
-        $test->setRelation('preguntas', $preguntasMezcladas);
+        $test->setRelation('preguntas', $preguntasProcesadas);
 
         return view('usuario.tests.realizarTest', compact('modulo', 'test'));
     }
@@ -38,43 +38,44 @@ class RealizarTestController extends Controller
     public function correccionTest(Request $request, Modulo $modulo, Test $test) {
         $respuestas = $request->input('respuestas', []);
         
-        $preguntas = $test->preguntas;
+        // Recuperamos exactamente las mismas preguntas que el alumno resolvió
+        $preguntas = $this->testService->prepararPreguntasTest($test);
         $resultado = $this->testService->corregir($respuestas, $preguntas);
 
         $usuario = auth()->user();
-
         $puntuacion = $resultado['nota'];
 
         if ($usuario->rol === 'alumno') { 
-
             if ($test->tipo === 'examen' && now() > $test->examen->fecha_cierre->addSeconds(60)) {
                 $puntuacion = 0;
             }
 
-                $fechaInicio = session('test_inicio_' . $test->id_test, now());
-                $duracionSegundos = $fechaInicio->diffInSeconds(now());
+            $fechaInicio = session('test_inicio_' . $test->id_test, now());
+            $duracionSegundos = $fechaInicio->diffInSeconds(now());
 
-                Puntuacion::create([
-                    'id_test'           => $test->id_test,
-                    'id_alumno'         => $usuario->id_usuario,
-                    'puntuacion'        => $puntuacion,
-                    'tipo'              => $test->tipo,
-                    'duracion_segundos' => $duracionSegundos,
-                ]);
+            Puntuacion::create([
+                'id_test'           => $test->id_test,
+                'id_alumno'         => $usuario->id_usuario,
+                'puntuacion'        => $puntuacion,
+                'tipo'              => $test->tipo,
+                'duracion_segundos' => $duracionSegundos,
+            ]);
         }
 
-        $preguntasMezcladas = $this->testService->aleatorizarPreguntas($preguntas, $test->id_test);
-
-        foreach ($preguntasMezcladas as $pregunta) {
+        // Volvemos a sincronizar el contenido guardado en Alpine para la vista
+        foreach ($preguntas as $pregunta) {
             $pregunta->contenido = $this->testService->aleatorizarOpciones($pregunta);
         }
+        $test->setRelation('preguntas', $preguntas);
 
-        $test->setRelation('preguntas', $preguntasMezcladas);
+        // REGLA DE CORRECCIÓN: Si es false, ocultamos las correcciones visuales
+        // Pasamos null si está desactivado para que el parcial de Blade no dibuje el feedback analítico
+        $estadoVista = $test->correccion ? $resultado['informe'] : null;
 
         return view('usuario.tests.realizarTest', [
             'modulo' => $modulo,
             'test'   => $test,
-            'estado' => $resultado['informe'], 
+            'estado' => $estadoVista, 
             'nota'   => $puntuacion,
         ]);
     }

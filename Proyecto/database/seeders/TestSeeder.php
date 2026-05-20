@@ -19,13 +19,16 @@ class TestSeeder extends Seeder
             string $nombre,
             string $descripcion,
             string $tipo,
-            array  $indices   // índices de las preguntas del módulo a incluir
+            array  $indices
         ): Test {
             $test = Test::create([
                 'nombre'      => $nombre,
                 'descripcion' => $descripcion,
                 'tipo'        => $tipo,
                 'id_modulo'   => $modulo->id_modulo,
+                'preguntas_a_mostrar' => null,
+                'aleatorio'           => true,
+                'correccion'          => true,
             ]);
 
             $preguntas = $modulo->preguntas->values();
@@ -40,7 +43,7 @@ class TestSeeder extends Seeder
         };
 
         // ════════════════════════════════════════════════════════════════════
-        // MÓDULO 1 — Programación  (20 preguntas, índices 0-19)
+        // MÓDULO 1 — Programación
         // ════════════════════════════════════════════════════════════════════
         $mProg = $modulos['Programación'];
 
@@ -50,7 +53,7 @@ class TestSeeder extends Seeder
         $crearTest($mProg, 'Examen Trimestral — Programación', 'Examen con todos los temas del trimestre', 'examen', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
         // ════════════════════════════════════════════════════════════════════
-        // MÓDULO 2 — Bases de Datos  (20 preguntas, índices 0-19)
+        // MÓDULO 2 — Bases de Datos
         // ════════════════════════════════════════════════════════════════════
         $mBBDD = $modulos['Bases de Datos'];
 
@@ -60,7 +63,7 @@ class TestSeeder extends Seeder
         $crearTest($mBBDD, 'Examen Trimestral — BBDD', 'Evaluación completa de bases de datos', 'examen', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
         // ════════════════════════════════════════════════════════════════════
-        // MÓDULO 3 — Desarrollo Web  (20 preguntas, índices 0-19)
+        // MÓDULO 3 — Desarrollo Web
         // ════════════════════════════════════════════════════════════════════
         $mWeb = $modulos['Desarrollo Web'];
 
@@ -70,7 +73,7 @@ class TestSeeder extends Seeder
         $crearTest($mWeb, 'Examen Trimestral — Web', 'Examen completo de desarrollo web', 'examen', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
         // ════════════════════════════════════════════════════════════════════
-        // MÓDULO 4 — Sistemas Operativos  (20 preguntas, índices 0-19)
+        // MÓDULO 4 — Sistemas Operativos
         // ════════════════════════════════════════════════════════════════════
         $mSO = $modulos['Sistemas Operativos'];
 
@@ -80,7 +83,7 @@ class TestSeeder extends Seeder
         $crearTest($mSO, 'Examen Trimestral — SO', 'Evaluación completa de sistemas operativos', 'examen', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
         // ════════════════════════════════════════════════════════════════════
-        // MÓDULO 5 — Entornos de Desarrollo  (20 preguntas, índices 0-19)
+        // MÓDULO 5 — Entornos de Desarrollo
         // ════════════════════════════════════════════════════════════════════
         $mEdes = $modulos['Entornos de Desarrollo'];
 
