@@ -73,7 +73,8 @@
 
     <h1 style="text-align: left;">{{ $edicion ? 'Editar Pregunta' : 'Crear Pregunta' }}</h1>
 
-    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()" enctype="multipart/form-data" style="position: relative;">
+    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()" enctype="multipart/form-data" style="position: relative;"
+        @submit="if (tipo_pregunta === 'balance' && !beBalanceado && !confirm('El balance no está cuadrado (Total Activo ≠ Total Patrimonio neto y Pasivo).\n\n¿Estás seguro de que quieres guardar la pregunta así?')) $event.preventDefault();">
         @csrf
         @if($edicion) @method('PUT') @endif
         
