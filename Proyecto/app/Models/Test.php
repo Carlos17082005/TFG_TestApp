@@ -16,6 +16,9 @@ class Test extends Model
         'descripcion',
         'tipo',
         'id_modulo',
+        'preguntas_a_mostrar',
+        'aleatorio',
+        'correccion',
     ];
 
     public function modulo() {
@@ -31,6 +34,6 @@ class Test extends Model
     }
 
     public function examen() {
-    return $this->hasOne(Examen::class, 'id_test', 'id_test');
-}
+        return $this->hasOne(Examen::class, 'id_test', 'id_test');
+    }
 }
