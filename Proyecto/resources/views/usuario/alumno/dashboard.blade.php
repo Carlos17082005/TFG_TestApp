@@ -40,14 +40,15 @@
                 </a>
             </div>
         @else
+            <x-modulo-nav-alumno :moduloActual="$moduloActual" />
+
             @if (!$moduloActual)
                 <div class="form-card" style="text-align: center; padding: 3rem 2rem; background: var(--surface-2); border-style: dashed;">
                     <h2 style="color: var(--tx-2); margin-bottom: 0.5rem; font-size: 1.4rem;">Panel de Asignaturas</h2>
-                    <p style="color: var(--tx-3); margin: 0;">Selecciona un módulo en el menú inferior para ver tus exámenes y ejercicios.</p>
+                    <p style="color: var(--tx-3); margin: 0;">Selecciona un módulo en el menú superior para ver tus exámenes y ejercicios.</p>
                 </div>
             @endif
 
-            <x-modulo-nav-alumno :moduloActual="$moduloActual" />
         @endif
     </div>
 @endsection

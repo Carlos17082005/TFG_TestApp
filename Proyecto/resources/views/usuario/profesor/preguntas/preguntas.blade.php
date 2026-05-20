@@ -96,10 +96,10 @@
                     <span style="color: var(--tx-4); transition: transform 0.2s;" :style="abierta ? 'transform: rotate(180deg)' : ''">▼</span>
                 </div>
                 
-                <div x-show="abierta" x-cloak style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; display: flex; gap: 0.75rem;">
+                <div class="acciones-pregunta" x-show="abierta" x-cloak style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; display: flex; gap: 0.75rem;">
                     <a href="{{ route('profesor.preguntas.edit', [$modulo->id_modulo, $pregunta->id_pregunta]) }}" class="btn btn-secondary">
                         Editar Pregunta
-                    </a><br><br>
+                    </a>
                     <form action="{{ route('profesor.preguntas.destroy', [$modulo->id_modulo, $pregunta->id_pregunta]) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres eliminar esta pregunta?');">
                         @csrf
                         @method('DELETE') 

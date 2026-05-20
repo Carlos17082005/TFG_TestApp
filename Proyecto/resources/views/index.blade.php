@@ -8,7 +8,7 @@
         <div class="form-card" style="padding: 4rem 2rem; border-top: 6px solid var(--color-modulo); box-shadow: var(--shadow-lg);">
             
             <h1 style="font-size: 3rem; color: var(--color-modulo); margin-bottom: 0.5rem; letter-spacing: -0.02em;">
-                Duolingo
+                TestApp
             </h1>
             
             <p style="font-size: 1.15rem; color: var(--tx-2); margin-bottom: 2.5rem;">
