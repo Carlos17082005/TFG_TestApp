@@ -7,6 +7,7 @@ use App\Models\Modulo;
 use App\Models\Etiqueta;
 use App\Services\PreguntaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;  // para borrar audios
 
 class PreguntaController extends Controller
 {
@@ -48,13 +49,19 @@ class PreguntaController extends Controller
             return $this->preguntaService->redirigir($modulo);
             
         } catch(\Exception $e) {
-           return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.']);
+           return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
         } 
     }
 
     public function destroy(Modulo $modulo, Pregunta $pregunta) {
         try {
+            $audioPath = $pregunta->contenido['audio_path'] ?? null;
             $pregunta->delete();
+
+            // borramos el archivo del servidor
+            if ($audioPath && Storage::disk('public')->exists($audioPath)) {
+                Storage::disk('public')->delete($audioPath);
+            }
 
             return redirect()->route('profesor.preguntas.index', $modulo->id_modulo);
 

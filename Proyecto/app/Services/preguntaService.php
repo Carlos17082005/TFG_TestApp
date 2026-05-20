@@ -7,12 +7,19 @@ use App\Models\Etiqueta;
 use App\Models\Modulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;  // para borrar audios
 
 class PreguntaService
 {
-    public function crearPregunta(Request $request, $id_modulo)
-    {
+    public function crearPregunta(Request $request, $id_modulo) {
         [$validated, $contenido, $etiquetas] = $this->prepararDatos($request);
+
+        // Subir nuevo audio (usa mezcladora de nombres para evitar conflictos si se suben 2 audios con el mismo nombre)
+        if ($request->hasFile('audio')) {
+            $path = $request->file('audio')->store('audios/preguntas', 'public');
+            $contenido['audio_path'] = $path;
+            $contenido['audio_mime'] = $request->file('audio')->getMimeType();
+        }
 
         // Usamos una transacción por si falla algo al guardar las etiquetas, que no se guarde la pregunta a medias
         return DB::transaction(function () use ($validated, $contenido, $id_modulo, $etiquetas) {
@@ -30,9 +37,32 @@ class PreguntaService
         });
     }
 
-    public function actualizarPregunta(Request $request, Pregunta $pregunta)
-    {
+    public function actualizarPregunta(Request $request, Pregunta $pregunta) {
         [$validated, $contenido, $etiquetas] = $this->prepararDatos($request);
+
+        // Mantener la referencia del audio viejo
+        $oldAudioPath = $pregunta->contenido['audio_path'] ?? null;
+
+        if ($request->boolean('eliminar_audio') && $oldAudioPath) {
+            Storage::disk('public')->delete($oldAudioPath);
+
+        // Subir nuevo audio (usa mezcladora de nombres para evitar conflictos si se suben 2 audios con el mismo nombre)
+        } elseif ($request->hasFile('audio')) {
+            // Guardar el nuevo
+            $path = $request->file('audio')->store('audios/preguntas', 'public');
+            $contenido['audio_path'] = $path;
+            $contenido['audio_mime'] = $request->file('audio')->getMimeType();
+
+            // Eliminamos el audio antiguo (Limpieza)
+            if ($oldAudioPath && Storage::disk('public')->exists($oldAudioPath)) {
+                Storage::disk('public')->delete($oldAudioPath);
+            }
+        } else {
+            // Si no sube audio nuevo, se mantiene el viejo en el JSON
+            if ($oldAudioPath) {
+                $contenido['audio_path'] = $oldAudioPath;
+            }
+        }
 
         // Usamos una transacción por si falla algo al guardar las etiquetas, que no se guarde la pregunta a medias
         return DB::transaction(function () use ($pregunta, $validated, $contenido, $etiquetas) {
@@ -49,8 +79,7 @@ class PreguntaService
         });
     }
 
-    private function prepararDatos(Request $request)
-    {
+    private function prepararDatos(Request $request) {
         $validated = $request->validate([
             'tipo' => 'required|string|max:255',
             'enunciado' => 'required|string|max:255',
@@ -70,6 +99,8 @@ class PreguntaService
             
             'etiquetas_nuevas'       => 'nullable|array',
             'etiquetas_nuevas.*'     => 'string|max:255',
+
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a|max:10240', // 10MB máx
         ]);
 
         if ($validated['tipo'] == 'multiple') {

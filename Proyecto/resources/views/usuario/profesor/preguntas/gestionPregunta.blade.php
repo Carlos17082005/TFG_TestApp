@@ -64,7 +64,7 @@
 
     <h1 style="text-align: left;">{{ $edicion ? 'Editar Pregunta' : 'Crear Pregunta' }}</h1>
 
-    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()">
+    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()" enctype="multipart/form-data" style="position: relative;">
         @csrf
         @if($edicion) @method('PUT') @endif
         
@@ -77,6 +77,59 @@
                 <option value="booleana">Verdadero / Falso</option>
                 <option value="conecta">Conectar Columnas</option>
             </select>
+        </div>
+
+        <!-- Botón Audio -->
+        <div class="form-group" style="position: absolute; top: 1.5rem; right: 1.5rem;">
+            <button type="button"
+                @click="if (!tiene_audio) mostrar_audio = !mostrar_audio"
+                style="background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--tx-3); font-family: var(--font);"
+                x-text="mostrar_audio ? (tiene_audio ? 'Audio' : 'Ocultar audio') : '+ Audio'">
+            </button>
+        </div>
+        
+
+        <!-- Panel Audio -->
+        <div x-show="mostrar_audio" x-cloak class="form-group">
+            <label class="form-label">Audio de la pregunta (Opcional)</label>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label class="btn btn-secondary" style="cursor: pointer; width: max-content;">
+                    Seleccionar archivo
+                    <input type="file" name="audio" accept="audio/*" style="display: none;" x-ref="audioInput"
+                        @change="
+                            const file = $event.target.files[0];
+                            if (file) {
+                                audio_preview_url = URL.createObjectURL(file);
+                                eliminar_audio = false;
+                            }
+                        ">
+                </label>
+                <span x-text="audio_preview_url ? 'Archivo seleccionado' : 'Ningún archivo seleccionado'"
+                    style="font-size: 0.9rem; color: var(--tx-3);"></span>
+            </div>
+
+            <!-- Preview Audio -->
+            <div x-show="audio_preview_url">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                    <audio controls style="flex: 1; min-width: 0;" :src="audio_preview_url"></audio>
+                    <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
+                        @click="audio_preview_url = null; $refs.audioInput.value = ''">&times;</button>
+                </div>
+            </div>
+
+            <!-- Audio server -->
+            @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
+                <div x-show="!eliminar_audio && !audio_preview_url">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                        <audio controls style="flex: 1; min-width: 0;">
+                            <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
+                        </audio>
+                        <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
+                            @click="eliminar_audio = true">&times;</button>
+                    </div>
+                </div>
+                <input type="hidden" name="eliminar_audio" :value="eliminar_audio ? '1' : '0'">
+            @endif
         </div>
 
         <div class="form-group" x-show="tipo_pregunta !== ''">
@@ -186,6 +239,13 @@
                 respuesta: @json($respuestaData),
                 opciones: @json($opcionesData),
                 parejas: @json($parejasData),
+                eliminar_audio: false,
+                audio_preview_url: null,
+                mostrar_audio: {{ isset($pregunta) && !empty($pregunta->contenido['audio_path'] ?? '') ? 'true' : 'false' }},
+                get tiene_audio() {
+                    return this.audio_preview_url !== null || 
+                        ({{ isset($pregunta) && !empty($pregunta->contenido['audio_path'] ?? '') ? 'true' : 'false' }} && !this.eliminar_audio);
+                },
                 etiquetas_bd: @json($etiquetas_bd ?? []),
                 etiquetas_agregadas: @json($etiquetasData),
                 id_seleccionada: '',

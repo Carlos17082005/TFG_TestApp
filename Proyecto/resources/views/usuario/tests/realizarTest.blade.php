@@ -55,6 +55,13 @@
                     <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
                         <span style="color: var(--color-modulo);">{{ $numPregunta }}.</span> {{ $contenido['enunciado'] }}
                     </h3>
+                    @if(!empty($pregunta->contenido['audio_path']))
+                        <div style="margin: 15px 0;">
+                            <audio controls>
+                                <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
+                            </audio>
+                        </div>
+                    @endif
 
                     <div style="padding-left: 0.5rem;">
                         @switch($pregunta->tipo)
