@@ -99,13 +99,6 @@
                     </div>
                 @endforeach
             </div>
-        @else
-            {{-- Si ya fue enviado, pero el profesor bloqueó la corrección visual --}}
-            <div class="form-card" style="padding: 1.5rem; text-align: center; background: var(--surface-2);">
-                <p style="font-size: 1.05rem; color: var(--tx-2); margin: 0;">
-                    espero que le hallas rezando a <strong>diosito</strong>, porque no voy a tener piedad
-                </p>
-            </div>
         @endif
 
         <div style="margin-top: 2rem; text-align: right;">
