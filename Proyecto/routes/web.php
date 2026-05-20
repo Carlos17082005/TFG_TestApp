@@ -213,6 +213,5 @@ Route::middleware('auth')->controller(AuthController::class)->group(function() {
 
     // Cerrar sesión
 
-    Route::get('/logout', 'logout')->name('auth.logout');
     Route::post('/logout', 'logout')->name('auth.logout');
 });

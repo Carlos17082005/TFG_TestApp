@@ -16,6 +16,10 @@
         /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
         --color-modulo-h: {{ $modulo->color }}; 
     }
+    /* inputs con color del modulo */
+    input:checked{
+        accent-color: var(--color-modulo);
+    }
 </style>
 @endpush
 
@@ -26,9 +30,12 @@
         <h1 style="margin-bottom: 0.5rem;">{{ $test->nombre }}</h1>
         <p style="font-size: 1.1rem; color: var(--tx-2);">{{ $test->descripcion }}</p>
 
-        @if (Auth::user()->alumno && $test->tipo == 'examen' && !isset($nota))
-            <p style="justify-content: center; margin-top: 1rem;">
-                Tiempo restante: <strong id="temporizador">Cargando...</strong>
+        @if (Auth::user()->alumno && $test->tipo == 'examen' && !isset($estado))
+            <p style="justify-content: center;margin-top: 1rem;position: fixed;
+            border: 2px solid var(--color-modulo);background: var(--color-modulo-20);
+            border-radius: 8px;top: 55px;right: 10px; 
+            font-size: larger;  padding: 1px 5px 0px 5px;">
+                <strong id="temporizador">Cargando...</strong>
             </p>
         @endif
     </div>
