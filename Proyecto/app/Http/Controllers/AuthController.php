@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RegistroAlumno;
 use App\Models\Alumno;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller {
     
@@ -67,8 +69,10 @@ class AuthController extends Controller {
             Auth::login($usuario);
 
             DB::commit();
+            
+            Mail::to($usuario->email)->send(new RegistroAlumno($usuario));
 
-            return redirect()->route('inicio.dashboard.mostrar');
+            return redirect()->route('inicio.dashboardAlumno.mostrar');
 
         } catch (\Exception $e){
             DB::rollBack();
