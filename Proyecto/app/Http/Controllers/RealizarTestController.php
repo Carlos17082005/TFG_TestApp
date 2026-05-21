@@ -36,6 +36,7 @@ class RealizarTestController extends Controller
     }
 
     public function correccionTest(Request $request, Modulo $modulo, Test $test) {
+        return redirect()->back()->withInput(); // ← LÍNEA TEMPORAL PARA PROBAR
         $respuestas = $request->input('respuestas', []);
         
         // Recuperamos exactamente las mismas preguntas que el alumno resolvió
