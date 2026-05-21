@@ -32,7 +32,7 @@ class PreguntaController extends Controller
             return $this->preguntaService->redirigir($modulo);
             
         } catch(\Exception $e) {
-           return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
+           return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.']);
         }        
     }
 
@@ -49,7 +49,7 @@ class PreguntaController extends Controller
             return $this->preguntaService->redirigir($modulo);
             
         } catch(\Exception $e) {
-           return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
+           return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.']);
         } 
     }
 
