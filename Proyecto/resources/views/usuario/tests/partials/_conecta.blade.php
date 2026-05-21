@@ -22,7 +22,6 @@
                         <select name="respuestas[{{ $id }}][{{ $index }}]" class="{{ $class }}" {{ $disabled }} @if(!$estado) onchange="actualizarSelectsConecta({{ $id }})" @endif>
                             <option value="">-</option>
                             @foreach ($letraParaTexto as $letra => $textoB)
-                                <option value="{{ $textoB }}" {{ $seleccionado === $textoB ? 'selected' : '' }}>{{ $letra }}</option>
                                 <option value="{{ $textoB }}" {{ ($estado ? $seleccionado : old('respuestas.'.$id.'.'.$index)) === $textoB ? 'selected' : '' }}>{{ $letra }}</option>
                             @endforeach
                         </select>
