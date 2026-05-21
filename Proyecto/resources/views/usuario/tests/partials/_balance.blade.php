@@ -224,7 +224,7 @@
 
     {{-- Banco de elementos --}}
     <div class="bal-banco">
-        <div class="bal-banco-hdr">📋 Elementos disponibles</div>
+        <div class="bal-banco-hdr"> Elementos disponibles</div>
         <div class="bal-banco-grid">
             <template x-for="el in elementosDisponibles" :key="el.nombre">
                 <div class="bal-banco-item">
