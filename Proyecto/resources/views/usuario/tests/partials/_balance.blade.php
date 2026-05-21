@@ -27,9 +27,6 @@
 @endphp
 
 @if(!$estado)
-<pre style="background:#f1f1f1; padding:1rem; font-size:0.75rem; overflow:auto;">
-OLD DATA: {{ json_encode(old('respuestas.' . $id), JSON_PRETTY_PRINT) }}
-</pre>
 {{-- =====================================================================
      MODO RESPUESTA: Tabla interactiva sin overflow y con columna de importes
      ===================================================================== --}}
