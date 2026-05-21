@@ -161,7 +161,7 @@
 
         <div class="form-group" x-show="tipo_pregunta !== ''">
             <label class="form-label">Escribe tu pregunta:</label>
-            <input type="text" name="enunciado" x-model="enunciado" class="form-input" placeholder="Ej: ¿Qué pregunta pongo aquí?">
+            <input required type="text" name="enunciado" x-model="enunciado" class="form-input" placeholder="Ej: ¿Qué pregunta pongo aquí?">
         </div>
 
         <div class="form-group" x-show="tipo_pregunta === 'texto'" x-cloak>

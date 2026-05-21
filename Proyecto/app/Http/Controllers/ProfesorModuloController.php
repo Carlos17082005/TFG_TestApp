@@ -12,7 +12,7 @@ class ProfesorModuloController extends Controller {
     // Mostrar la vista de la creación del módulo
 
     public function create() {
-        return view('usuario.profesor.modulo.crearModulo');
+        return view('usuario.profesor.modulo.gestionModulo');
     }
 
     // Crear el modulo
@@ -48,7 +48,7 @@ class ProfesorModuloController extends Controller {
     // ================
 
     public function edit(Modulo $modulo) {
-        return view('usuario.profesor.modulo.editarModulo', compact('modulo'));
+        return view('usuario.profesor.modulo.gestionModulo', compact('modulo'));
     }
 
     // Editar módulo
