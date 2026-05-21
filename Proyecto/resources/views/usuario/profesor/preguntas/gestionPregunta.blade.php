@@ -31,6 +31,7 @@
         $enunciadoData = $pregunta->contenido['enunciado'] ?? "";
         $respuestaData = $pregunta->contenido['respuesta'] ?? "";
 
+        // Opciones (múltiple)
         $opcionesData = [];
         if ($edicion && isset($pregunta->contenido['opciones'])) {
             foreach ($pregunta->contenido['opciones'] as $i => $valor) {
@@ -40,6 +41,7 @@
             $opcionesData = [['id' => 1, 'valor' => ''],['id' => 2, 'valor' => ''],['id' => 3, 'valor' => '']];
         }
         
+        // Parejas (conecta)
         $parejasData = [];
         if ($edicion && !empty($pregunta->contenido['parejas'])) {
             foreach ($pregunta->contenido['parejas'] as $i => $pareja) {
@@ -49,13 +51,20 @@
             $parejasData = [['id' => 1, 'a' => '', 'b' => ''],['id' => 2, 'a' => '', 'b' => '']];
         }
 
-        $etiquetasData = [];
+        // Secciones (balance)
+        $balanceData = ($edicion && $tipoData === 'balance')
+            ? ($pregunta->contenido['secciones'] ?? null)
+            : null;
+
+        // Etiquetas
+            $etiquetasData = [];
         if ($edicion && isset($pregunta->listaEtiquetas)) {
             $etiquetasData = $pregunta->listaEtiquetas->map(function($t) {
                 return ['id' => $t->id_etiqueta, 'nombre' => $t->nombre, 'es_nueva' => false];
             })->toArray();
         }
 
+        // URL cancelar (borrador test)
         $borrador = session('test_borrador');
         $urlCancelar = $borrador 
             ? (isset($borrador['origen_test']) ? route('profesor.tests.edit', [$modulo->id_modulo, $borrador['origen_test']]) : route('profesor.tests.create', $modulo->id_modulo))
@@ -64,7 +73,8 @@
 
     <h1 style="text-align: left;">{{ $edicion ? 'Editar Pregunta' : 'Crear Pregunta' }}</h1>
 
-    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()">
+    <form method="POST" action="{{ $url }}" class="form-card" x-data="handler()" enctype="multipart/form-data" style="position: relative;"
+        @submit="if (tipo_pregunta === 'balance' && !beBalanceado && !confirm('El balance no está cuadrado (Total Activo ≠ Total Patrimonio neto y Pasivo).\n\n¿Estás seguro de que quieres guardar la pregunta así?')) $event.preventDefault();">
         @csrf
         @if($edicion) @method('PUT') @endif
         
@@ -76,7 +86,77 @@
                 <option value="multiple">Opción Múltiple</option>
                 <option value="booleana">Verdadero / Falso</option>
                 <option value="conecta">Conectar Columnas</option>
+                <option value="balance">Balance de Situación</option>
             </select>
+        </div>
+
+        <div class="form-group" style="position: absolute; top: 1.5rem; right: 1.5rem;">
+            <button type="button"
+                @click="if (!tiene_audio) mostrar_audio = !mostrar_audio"
+                style="background: none; border: none; cursor: pointer; font-size: 0.875rem; color: var(--tx-3); font-family: var(--font);"
+                x-text="mostrar_audio ? (tiene_audio ? 'Audio' : 'Ocultar audio') : '+ Audio'">
+            </button>
+        </div>
+        
+
+        <div x-show="mostrar_audio" x-cloak class="form-group">
+
+            {{-- Cabecera: label + botón seleccionar --}}
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                <label class="form-label" style="margin: 0;">Audio de la pregunta (Opcional)</label>
+                <label class="btn btn-secondary" style="cursor: pointer; width: max-content; font-size: 0.85rem; padding: 0.3rem 0.75rem;">
+                    + Seleccionar archivo
+                    <input type="file" name="audio" accept="audio/*" style="display: none;" x-ref="audioInput"
+                        @change="
+                            const file = $event.target.files[0];
+                            if (file) {
+                                if ($refs.audioNuevo) { $refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; }
+                                audio_preview_url = URL.createObjectURL(file);
+                            }
+                        ">
+                </label>
+            </div>
+
+            {{-- Fila de players --}}
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+
+                {{-- Audio nuevo (izquierda) --}}
+                <div x-show="audio_preview_url" style="flex: 1; min-width: 260px;"
+                    x-effect="if (!audio_preview_url && $refs.audioNuevo) { $refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; }">
+                    <p style="font-size: 0.8rem; color: var(--tx-3); margin-bottom: 0.4rem;">
+                        @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
+                            Nuevo audio (reemplaza al actual)
+                        @else
+                            Nuevo audio
+                        @endif
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                        <audio x-ref="audioNuevo" controls style="flex: 1; min-width: 0;" :src="audio_preview_url"></audio>
+                        <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
+                            @click="$refs.audioNuevo.pause(); $refs.audioNuevo.currentTime = 0; audio_preview_url = null; $refs.audioInput.value = ''"
+                            title="Quitar audio nuevo">&times;</button>
+                    </div>
+                </div>
+
+                {{-- Audio guardado en servidor (derecha), solo en edición --}}
+                @if(isset($pregunta) && !empty($pregunta->contenido['audio_path']))
+                    <div style="flex: 1; min-width: 260px;"
+                        x-show="!eliminar_audio"
+                        x-effect="if (eliminar_audio && $refs.audioGuardado) { $refs.audioGuardado.pause(); $refs.audioGuardado.currentTime = 0; }">
+                        <p style="font-size: 0.8rem; color: var(--tx-3); margin-bottom: 0.4rem;">Audio actual (guardado)</p>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--r-sm);">
+                            <audio x-ref="audioGuardado" controls style="flex: 1; min-width: 0;">
+                                <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
+                            </audio>
+                            <button type="button" class="btn btn-danger" style="padding: 0.4rem 0.6rem; flex-shrink: 0;"
+                                @click="$refs.audioGuardado.pause(); $refs.audioGuardado.currentTime = 0; eliminar_audio = true"
+                                title="Eliminar audio guardado">&times;</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="eliminar_audio" :value="eliminar_audio ? '1' : '0'">
+                @endif
+
+            </div>
         </div>
 
         <div class="form-group" x-show="tipo_pregunta !== ''">
@@ -137,6 +217,192 @@
             <button type="button" class="btn btn-secondary" style="width: max-content;" @click="parejas.push({ id: Date.now(), a: '', b: '' })">+ Añadir Pareja</button>
         </div>
 
+        <div class="form-group" x-show="tipo_pregunta === 'balance'" x-cloak>
+            <label class="form-label">Rellena el balance con los importes correctos:</label>
+            <p style="font-size:0.82rem;color:#666;margin-bottom:0.75rem;">
+                Escribe el nombre y el importe de cada elemento. Las filas vacías no se guardarán.
+            </p>
+
+            {{-- Campo oculto que envía las secciones como JSON --}}
+            <input type="hidden" name="secciones" :value="JSON.stringify(balanceSecciones)">
+
+            <div class="be-grid">
+
+                {{-- CELDA 1: Top Left (Activo No Corriente) --}}
+                <div class="be-col" style="border-bottom: 1px solid #ccc;">
+                    <template x-for="sec in balanceSecciones.filter(s => s.col === 'left' && s.key === 'activo_nc')" :key="sec.key">
+                        <div>
+                            <div class="be-sec-hdr" x-text="sec.titulo"></div>
+                            <template x-for="(bloque, bi) in sec.bloques" :key="bi">
+                                <div>
+                                    <div class="be-blk-hdr">
+                                        <span x-text="bloque.label"></span>
+                                    </div>
+                                    <template x-for="(fila, fi) in bloque.filas" :key="fi">
+                                        <div class="be-fila">
+                                            <input type="text"
+                                                   class="form-input be-nombre"
+                                                   x-model="fila.nombre"
+                                                   placeholder="Nombre del elemento"
+                                                   :disabled="tipo_pregunta !== 'balance'">
+                                            <input type="text"
+                                                   class="form-input be-importe"
+                                                   x-model="fila.importe"
+                                                   placeholder="0"
+                                                   :disabled="tipo_pregunta !== 'balance'"
+                                                   @input="$dispatch('balance-changed')">
+                                            <button type="button" class="be-btn-del-fila"
+                                                    x-show="bloque.filas.length > 1"
+                                                    @click="bloque.filas.splice(fi, 1); $dispatch('balance-changed')"
+                                                    title="Eliminar fila">&times;</button>
+                                        </div>
+                                    </template>
+                                    <button type="button" class="be-btn-add-fila"
+                                            @click="bloque.filas.push({ nombre: '', importe: '' })">
+                                        + Añadir fila
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- CELDA 2: Top Right (PN y Pasivo No Corriente) 
+                     AÑADIDO: display: flex; flex-direction: column; para que dividan el espacio al 50% --}}
+                <div class="be-col" style="border-bottom: 1px solid #ccc; display: flex; flex-direction: column;">
+                    <template x-for="(sec, index) in balanceSecciones.filter(s => s.col === 'right' && s.key !== 'pasivo_c')" :key="sec.key">
+                        <div style="flex: 1; display: flex; flex-direction: column;" :style="index === 0 ? 'border-bottom: 1px solid #ccc;' : ''">
+                            <div class="be-sec-hdr" x-text="sec.titulo"></div>
+                            <div style="flex: 1;">
+                                <template x-for="(bloque, bi) in sec.bloques" :key="bi">
+                                    <div>
+                                        <div class="be-blk-hdr">
+                                            <span x-text="bloque.label"></span>
+                                        </div>
+                                        <template x-for="(fila, fi) in bloque.filas" :key="fi">
+                                            <div class="be-fila">
+                                                <input type="text"
+                                                       class="form-input be-nombre"
+                                                       x-model="fila.nombre"
+                                                       placeholder="Nombre del elemento"
+                                                       :disabled="tipo_pregunta !== 'balance'">
+                                                <input type="text"
+                                                       class="form-input be-importe"
+                                                       x-model="fila.importe"
+                                                       placeholder="0"
+                                                       :disabled="tipo_pregunta !== 'balance'"
+                                                       @input="$dispatch('balance-changed')">
+                                                <button type="button" class="be-btn-del-fila"
+                                                        x-show="bloque.filas.length > 1"
+                                                        @click="bloque.filas.splice(fi, 1); $dispatch('balance-changed')"
+                                                        title="Eliminar fila">&times;</button>
+                                            </div>
+                                        </template>
+                                        <button type="button" class="be-btn-add-fila"
+                                                @click="bloque.filas.push({ nombre: '', importe: '' })">
+                                            + Añadir fila
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- CELDA 3: Bottom Left (Activo Corriente) --}}
+                <div class="be-col">
+                    <template x-for="sec in balanceSecciones.filter(s => s.col === 'left' && s.key !== 'activo_nc')" :key="sec.key">
+                        <div>
+                            <div class="be-sec-hdr" x-text="sec.titulo"></div>
+                            <template x-for="(bloque, bi) in sec.bloques" :key="bi">
+                                <div>
+                                    <div class="be-blk-hdr">
+                                        <span x-text="bloque.label"></span>
+                                    </div>
+                                    <template x-for="(fila, fi) in bloque.filas" :key="fi">
+                                        <div class="be-fila">
+                                            <input type="text"
+                                                   class="form-input be-nombre"
+                                                   x-model="fila.nombre"
+                                                   placeholder="Nombre del elemento"
+                                                   :disabled="tipo_pregunta !== 'balance'">
+                                            <input type="text"
+                                                   class="form-input be-importe"
+                                                   x-model="fila.importe"
+                                                   placeholder="0"
+                                                   :disabled="tipo_pregunta !== 'balance'"
+                                                   @input="$dispatch('balance-changed')">
+                                            <button type="button" class="be-btn-del-fila"
+                                                    x-show="bloque.filas.length > 1"
+                                                    @click="bloque.filas.splice(fi, 1); $dispatch('balance-changed')"
+                                                    title="Eliminar fila">&times;</button>
+                                        </div>
+                                    </template>
+                                    <button type="button" class="be-btn-add-fila"
+                                            @click="bloque.filas.push({ nombre: '', importe: '' })">
+                                        + Añadir fila
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- CELDA 4: Bottom Right (Pasivo Corriente) --}}
+                <div class="be-col">
+                    <template x-for="sec in balanceSecciones.filter(s => s.col === 'right' && s.key === 'pasivo_c')" :key="sec.key">
+                        <div>
+                            <div class="be-sec-hdr" x-text="sec.titulo"></div>
+                            <template x-for="(bloque, bi) in sec.bloques" :key="bi">
+                                <div>
+                                    <div class="be-blk-hdr">
+                                        <span x-text="bloque.label"></span>
+                                    </div>
+                                    <template x-for="(fila, fi) in bloque.filas" :key="fi">
+                                        <div class="be-fila">
+                                            <input type="text"
+                                                   class="form-input be-nombre"
+                                                   x-model="fila.nombre"
+                                                   placeholder="Nombre del elemento"
+                                                   :disabled="tipo_pregunta !== 'balance'">
+                                            <input type="text"
+                                                   class="form-input be-importe"
+                                                   x-model="fila.importe"
+                                                   placeholder="0"
+                                                   :disabled="tipo_pregunta !== 'balance'"
+                                                   @input="$dispatch('balance-changed')">
+                                            <button type="button" class="be-btn-del-fila"
+                                                    x-show="bloque.filas.length > 1"
+                                                    @click="bloque.filas.splice(fi, 1); $dispatch('balance-changed')"
+                                                    title="Eliminar fila">&times;</button>
+                                        </div>
+                                    </template>
+                                    <button type="button" class="be-btn-add-fila"
+                                            @click="bloque.filas.push({ nombre: '', importe: '' })">
+                                        + Añadir fila
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+            </div>{{-- /be-grid --}}
+
+            {{-- Totales en vivo --}}
+            <div class="be-totales">
+                <div class="be-total-cell">
+                    Total Activo (A+B):
+                    <strong :class="beBalanceado ? 'be-total-ok' : ''" x-text="beTotalFmt('left')"></strong>
+                </div>
+                <div class="be-total-cell">
+                    Total PN y Pasivo (A+B+C):
+                    <strong :class="beBalanceado ? 'be-total-ok' : (beTotalNum('right') > 0 ? 'be-total-mismatch' : '')"
+                            x-text="beTotalFmt('right')"></strong>
+                </div>
+            </div>
+        </div>
+        
         <hr style="margin: 2rem 0;">
 
         <div class="form-group">
@@ -179,6 +445,31 @@
     </form>
 
     <script>
+        // ── Estructura por defecto del balance (PGC español) ────────────────
+        const defaultBalance = [
+            { key: 'activo_nc', titulo: 'A) Activo no corriente', col: 'left', bloques: [
+                { label: 'Inmovilizado intangible',               filas: [{ nombre: '', importe: '' }] },
+                { label: 'Inmovilizado material',                 filas: [{ nombre: '', importe: '' }] },
+                { label: 'Inversiones inmobiliarias',             filas: [{ nombre: '', importe: '' }] },
+                { label: 'Inversiones financieras a l/p',         filas: [{ nombre: '', importe: '' }] },
+                { label: 'Deudores comerciales no corrientes',    filas: [{ nombre: '', importe: '' }] },
+            ]},
+            { key: 'activo_c', titulo: 'B) Activo corriente', col: 'left', bloques: [
+                { label: 'Existencias',                                              filas: [{ nombre: '', importe: '' }] },
+                { label: 'Deudores comerciales y otras cuentas a cobrar',            filas: [{ nombre: '', importe: '' }] },
+                { label: 'Inversiones financieras a c/p',                           filas: [{ nombre: '', importe: '' }] },
+                { label: 'Efectivo y otros activos líquidos equivalentes',           filas: [{ nombre: '', importe: '' }] },
+            ]},
+            { key: 'pn', titulo: 'A) Patrimonio neto', col: 'right', bloques: [
+                { label: 'Capital y reservas',  filas: [{ nombre: '', importe: '' }] },
+            ]},
+            { key: 'pasivo_nc', titulo: 'B) Pasivo no corriente', col: 'right', bloques: [
+                { label: 'Deudas a largo plazo', filas: [{ nombre: '', importe: '' }] },
+            ]},
+            { key: 'pasivo_c', titulo: 'C) Pasivo corriente', col: 'right', bloques: [
+                { label: 'Acreedores comerciales y otras cuentas a pagar', filas: [{ nombre: '', importe: '' }] },
+            ]},
+        ];
         function handler() {
             return {
                 tipo_pregunta: @json($tipoData), 
@@ -186,6 +477,16 @@
                 respuesta: @json($respuestaData),
                 opciones: @json($opcionesData),
                 parejas: @json($parejasData),
+                balanceSecciones: @json($balanceData) ?? defaultBalance,
+                eliminar_audio: false,
+                audio_preview_url: null,
+                mostrar_audio: {{ isset($pregunta) && !empty($pregunta->contenido['audio_path'] ?? '') ? 'true' : 'false' }},
+                get tiene_audio() {
+                    return this.audio_preview_url !== null || 
+                        ({{ isset($pregunta) && !empty($pregunta->contenido['audio_path'] ?? '') ? 'true' : 'false' }} && !this.eliminar_audio);
+                },
+
+                // etiquetas
                 etiquetas_bd: @json($etiquetas_bd ?? []),
                 etiquetas_agregadas: @json($etiquetasData),
                 id_seleccionada: '',
@@ -199,6 +500,27 @@
                         return !yaAgregada && coincide;
                     });
                 },
+                // Balance: totales en vivo
+                beTotalNum(col) {
+                    return this.balanceSecciones
+                        .filter(s => s.col === col)
+                        .flatMap(s => s.bloques)
+                        .flatMap(b => b.filas)
+                        .reduce((sum, f) => {
+                            const raw = (f.importe || '').replace(/\./g, '').replace(',', '.');
+                            return sum + (parseFloat(raw) || 0);
+                        }, 0);
+                },
+                beTotalFmt(col) {
+                    return this.beTotalNum(col).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                },
+                get beBalanceado() {
+                    const a = this.beTotalNum('left');
+                    const p = this.beTotalNum('right');
+                    return a > 0 && Math.abs(a - p) < 0.01;
+                },
+
+                // utilidades
                 normalizar(texto) {
                     return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
                 },

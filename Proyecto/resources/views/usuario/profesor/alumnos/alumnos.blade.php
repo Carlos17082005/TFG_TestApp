@@ -87,9 +87,7 @@
 
     @else
         <div class="form-card" style="text-align: center; padding: 3rem;">
-            <p style="margin-bottom: 1rem;">Tus alumnos no tienen ganas de aprender :(</p>
-            <p>Te dejamos una guía sobre como motivarlos: <a href="https://youtu.be/dQw4w9WgXcQ?si=p68uEu3Mc2_X7HDs">Ver guía</a></p>
-            <img src="https://media.tenor.com/qWMqAsnk2h8AAAAM/cat-explosion.gif" style="margin: 1.5rem auto; width: 200px;">
+            <p style="margin-bottom: 1rem;">No tienes alumnos en este módulo</p>
         </div>
     @endif
 @endsection

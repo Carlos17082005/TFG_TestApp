@@ -2,47 +2,66 @@
 
 namespace App\Services;
 
+use App\Services\TestService;
 use App\Models\Pregunta;
+use App\Models\Test;
 use Illuminate\Support\Collection;
 
 class TestService
 {
-    // =========================================================================
-    // ALEATORIZACIÓN
-    // =========================================================================
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Configuracion y aletorizacion de preguntas
 
     /**
-     * Devuelve las preguntas en orden aleatorio, guardando ese orden en sesión
-     * para que la vista de resultados pueda mostrarlas en el mismo orden.
-     * Si ya existe el orden (navegación atrás), lo reutiliza.
+     * Gestiona el subconjunto de preguntas y su ordenación basándose en
+     * los parámetros configurados en el test (preguntas_a_mostrar y aleatorio).
+     * Mantiene los datos fijados en sesión durante todo el intento.
      */
-    public function aleatorizarPreguntas(Collection $preguntas, int $idTest): Collection
-    {
-        $key = "test_{$idTest}_orden";
+    public function prepararPreguntasTest(Test $test) {
+        $keyIds = "test_{$test->id_test}_ids";
 
-        if (!session()->has($key)) {
-            $ids = $preguntas->pluck('id_pregunta')->shuffle()->toArray();
-            session([$key => $ids]);
+        if (!session()->has($keyIds)) {
+            $preguntasBase = $test->preguntas; // Orden relativo original de la relación
+
+            // 1. Gestionar 'preguntas_a_mostrar' (Sorteo de X preguntas sobre Y)
+            if ($test->preguntas_a_mostrar && $test->preguntas_a_mostrar < $preguntasBase->count()) {
+                $subconjunto = $preguntasBase->shuffle()->take($test->preguntas_a_mostrar);
+                
+                // 2. Gestionar 'aleatorio' si se extrajo un subconjunto
+                if (!$test->aleatorio) {
+                    // Si NO es aleatorio, restauramos el orden relativo original de la BD
+                    $idsSubconjunto = $subconjunto->pluck('id_pregunta')->toArray();
+                    $preguntasFinales = $preguntasBase->whereIn('id_pregunta', $idsSubconjunto)->values();
+                } else {
+                    $preguntasFinales = $subconjunto->values();
+                }
+            } else {
+                // Si se muestran todas las preguntas asignadas
+                if ($test->aleatorio) {
+                    $preguntasFinales = $preguntasBase->shuffle()->values();
+                } else {
+                    $preguntasFinales = $preguntasBase->values();
+                }
+            }
+
+            // Guardamos las IDs elegidas y su orden definitivo en la sesión
+            session([$keyIds => $preguntasFinales->pluck('id_pregunta')->toArray()]);
         }
 
-        $ids = session($key);
+        // Reconstruimos la colección en base al orden estricto de la sesión
+        $idsGuardados = session($keyIds);
+        $todasPreguntas = $test->preguntas;
 
-        return collect($ids)
-            ->map(fn($id) => $preguntas->firstWhere('id_pregunta', $id))
+        return collect($idsGuardados)
+            ->map(fn($id) => $todasPreguntas->firstWhere('id_pregunta', $id))
             ->filter()
             ->values();
     }
 
     /**
      * Aleatoriza las opciones internas de una pregunta y las guarda en sesión.
-     * Devuelve el array de contenido listo para pasar a la vista.
-     *
-     * - multiple  → baraja el array de opciones
-     * - conecta   → baraja la columna B (los A siempre en orden)
-     * - booleana/texto → sin cambios
      */
-    public function aleatorizarOpciones(Pregunta $pregunta): array
-    {
+    public function aleatorizarOpciones(Pregunta $pregunta): array {
         $id        = $pregunta->id_pregunta;
         $tipo      = $pregunta->tipo;
         $contenido = $pregunta->contenido->toArray();
@@ -59,21 +78,17 @@ class TestService
         };
     }
 
-    private function aleatorizarMultiple(array $contenido, string $key): array
-    {
+    private function aleatorizarMultiple(array $contenido, string $key): array {
         $opciones = $contenido['opciones'];
         shuffle($opciones);
         session([$key => $opciones]);
         return array_merge($contenido, ['opciones' => $opciones]);
     }
 
-    private function aleatorizarConecta(array $contenido, string $key): array
-    {
+    private function aleatorizarConecta(array $contenido, string $key): array {
         $columnB = collect($contenido['parejas'])->pluck('b')->shuffle()->toArray();
-
         $parejas = $contenido['parejas'];
         $claves = array_keys($parejas);
-        
         shuffle($claves);
         
         $parejasMezcladas = [];
@@ -92,12 +107,10 @@ class TestService
         ]);
     }
 
-    private function aplicarOrden(string $tipo, array $contenido, mixed $guardado): array
-    {
+    private function aplicarOrden(string $tipo, array $contenido, mixed $guardado): array {
         return match ($tipo) {
             'multiple' => array_merge($contenido, ['opciones' => $guardado]),
             'conecta'  => array_merge($contenido, [
-                // Ajustamos para leer el nuevo formato del array guardado en sesión [columna_b y parejas]
                 'columna_b_mezclada' => is_array($guardado) && isset($guardado['columna_b']) ? $guardado['columna_b'] : $guardado,
                 'parejas'            => is_array($guardado) && isset($guardado['parejas']) ? $guardado['parejas'] : $contenido['parejas']
             ]),
@@ -105,34 +118,19 @@ class TestService
         };
     }
 
-    public function limpiarSesion(int $idTest, Collection $preguntas): void
-    {
-        session()->forget("test_{$idTest}_orden");
+    public function limpiarSesion(int $idTest, Collection $preguntas): void {
+        // Limpiamos la nueva clave de control de IDs seleccionadas
+        session()->forget("test_{$idTest}_ids");
 
         foreach ($preguntas as $pregunta) {
             session()->forget("test_interno_{$pregunta->id_pregunta}");
         }
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Correccion 
 
-    // =========================================================================
-    // CORRECCIÓN
-    // =========================================================================
-
-    /**
-     * Corrige todas las respuestas y devuelve el informe completo.
-     *
-     * @param  array      $respuestas   $_POST['respuestas'] → [id_pregunta => respuesta]
-     * @param  Collection $preguntas
-     * @return array{
-     *   nota: float,
-     *   aciertos: float,
-     *   total: int,
-     *   informe: array
-     * }
-     */
-    public function corregir(array $respuestas, Collection $preguntas): array
-    {
+    public function corregir(array $respuestas, Collection $preguntas): array {
         $aciertos = 0.0;
         $informe  = [];
 
@@ -142,7 +140,11 @@ class TestService
             $contenido = $pregunta->contenido->toArray();
 
             $respUsuario  = $respuestas[$id] ?? null;
-            $respCorrecta = $contenido['respuesta'] ?? null;
+            $respCorrecta = match ($tipo) {
+                'balance' => $contenido['secciones'] ?? null,
+                'conecta' => null,
+                default   => $contenido['respuesta'] ?? null,
+            };
 
             $puntuacion = $this->corregirPregunta($tipo, $contenido, $respUsuario, $respCorrecta);
             $aciertos  += $puntuacion;
@@ -166,8 +168,10 @@ class TestService
         ];
     }
 
-    private function corregirPregunta(string $tipo, array $contenido, mixed $respUsuario, mixed $respCorrecta): float
-    {
+    private function corregirPregunta(string $tipo, array $contenido, mixed $respUsuario, mixed $respCorrecta): float {
+        if ($tipo === 'balance') {
+            return $this->corregirBalance($respUsuario, $contenido['secciones'] ?? []);
+        }
         if ($respUsuario === null || $respUsuario === '') {
             return 0.0; 
         }
@@ -181,55 +185,73 @@ class TestService
         };
     }
 
-    /** Booleana: comparación exacta (verdadero/falso). */
-    private function corregirExacto(mixed $usuario, mixed $correcta): float
-    {
+    private function corregirExacto(mixed $usuario, mixed $correcta): float {
         return (string)$usuario === (string)$correcta ? 1.0 : 0.0;
     }
 
-    /** Múltiple y texto: comparación normalizada. */
-    private function corregirTextoNormalizado(mixed $usuario, mixed $correcta): float
-    {
-        return $this->normalizar((string)$usuario) === $this->normalizar((string)$correcta)
-            ? 1.0
-            : 0.0;
+    private function corregirTextoNormalizado(mixed $usuario, mixed $correcta): float {
+        return $this->normalizar((string)$usuario) === $this->normalizar((string)$correcta) ? 1.0 : 0.0;
     }
 
-    /**
-     * Conecta: puntuación parcial según pares correctos.
-     * El usuario envía [index => texto_b_seleccionado].
-     */
-    private function corregirConecta(mixed $usuario, array $parejas): float
-    {
+    private function corregirConecta(mixed $usuario, array $parejas): float {
         if (!is_array($usuario) || empty($parejas)) return 0.0;
-
-        $total    = count($parejas);
-        $aciertos = 0;
-
+        $total = count($parejas); $aciertos = 0;
         foreach ($parejas as $index => $pareja) {
             $seleccionado = $usuario[$index] ?? null;
-            if ($this->normalizar((string)$seleccionado) === $this->normalizar($pareja['b'])) {
-                $aciertos++;
-            }
+            if ($this->normalizar((string)$seleccionado) === $this->normalizar($pareja['b'])) { $aciertos++; }
         }
-
         return $total > 0 ? $aciertos / $total : 0.0;
     }
 
+    private function corregirBalance(mixed $usuario, array $secciones): float {
+        if (!is_array($usuario) || empty($secciones)) return 0.0;
+        $correctos = [];
+        foreach ($secciones as $sec) {
+            foreach ($sec['bloques'] as $bi => $bloque) {
+                foreach ($bloque['filas'] as $fila) {
+                    if (empty($fila['nombre'])) continue;
+                    $correctos[strtolower(trim($fila['nombre']))] = [
+                        'secKey'  => $sec['key'],
+                        'bi'      => $bi,
+                        'importe' => $fila['importe'] ?? '',
+                    ];
+                }
+            }
+        }
+        $total = count($correctos); $aciertos = 0;
+        foreach ($usuario as $secKey => $bloques) {
+            foreach ($bloques as $bi => $filas) {
+                foreach ($filas as $filaU) {
+                    $nombre = strtolower(trim($filaU['nombre'] ?? ''));
+                    if (empty($nombre)) continue;
+                    $correcto = $correctos[$nombre] ?? null;
+                    if (!$correcto) continue;
+                    $secOk     = $correcto['secKey'] === $secKey;
+                    $bloqueOk  = (int) $correcto['bi'] === (int) $bi;
+                    $importeOk = abs($this->normalizarImporte((string) ($filaU['importe'] ?? '')) - $this->normalizarImporte((string) $correcto['importe'])) < 0.01;
+                    if ($secOk && $bloqueOk && $importeOk) { $aciertos++; }
+                }
+            }
+        }
+        return $total > 0 ? $aciertos / $total : 0.0;
+    }
 
-    // =========================================================================
-    // UTILIDADES
-    // =========================================================================
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Utilidades 
 
-    public function normalizar(string $texto): string
-    {
+    public function normalizar(string $texto): string {
         $texto = mb_strtolower(trim($texto), 'UTF-8');
-        $texto = strtr($texto, [
-            'á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u',
-            'ä'=>'a','ë'=>'e','ï'=>'i','ö'=>'o','ü'=>'u',
-            'à'=>'a','è'=>'e','ì'=>'i','ò'=>'o','ù'=>'u',
-            "'"=>"'","'"=>"'",'¿'=>'','¡'=>'',
-        ]);
+        $texto = strtr($texto, ['á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u','ä'=>'a','ë'=>'e','ï'=>'i','ö'=>'o','ü'=>'u','à'=>'a','è'=>'e','ì'=>'i','ò'=>'o','ù'=>'u',"'"=>"'","'"=>"'",'¿'=>'','¡'=>'']);
         return preg_replace('/\s+/', ' ', $texto);
+    }
+
+    private function normalizarImporte(string $valor): float {
+        $valor = trim($valor);
+        if (str_contains($valor, ',')) {
+            $valor = str_replace('.', '', $valor); $valor = str_replace(',', '.', $valor);
+        } else {
+            if (preg_match('/^\d{1,3}\.\d{3}$/', $valor)) { $valor = str_replace('.', '', $valor); }
+        }
+        return (float) preg_replace('/[^\d.]/', '', $valor);
     }
 }

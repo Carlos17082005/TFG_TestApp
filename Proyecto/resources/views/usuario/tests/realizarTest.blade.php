@@ -41,7 +41,7 @@
     </div>
 
     @if(isset($nota))
-        <div style="margin-bottom: 2rem;">
+        <div style="margin-bottom: 2rem; text-align: center;">
             <h2>
                 Tu nota final es: <strong>{{ $nota }} / 10</strong>
             </h2>
@@ -51,40 +51,58 @@
     <form id="form-test" action="{{ Auth::user()->rol === 'profesor' ? route('profesor.tests.corregir', [$modulo->id_modulo, $test->id_test]) : route('alumno.tests.corregir', [$modulo->id_modulo, $test->id_test]) }}" method="POST" style="background: transparent; border: none; box-shadow: none; padding: 0;">  
         @csrf
 
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            @foreach($test->preguntas as $index => $pregunta)
-                @php
-                    $contenido = $pregunta->contenido;
-                    $numPregunta = $index + 1; 
-                @endphp
+        {{-- Si no está corregido aún, O si está corregido y la corrección SÍ debe mostrarse --}}
+        @if(!isset($nota) || $test->correccion)
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                @foreach($test->preguntas as $index => $pregunta)
+                    @php
+                        $contenido = $pregunta->contenido;
+                        $numPregunta = $index + 1; 
+                    @endphp
 
-                <div class="form-card" style="padding: 1.5rem; margin-bottom: 0;">
-                    <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                        <span style="color: var(--color-modulo);">{{ $numPregunta }}.</span> {{ $contenido['enunciado'] }}
-                    </h3>
+                    <div class="form-card" style="padding: 1.5rem; margin-bottom: 0;">
+                        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                            <span style="color: var(--color-modulo);">{{ $numPregunta }}.</span> {{ $contenido['enunciado'] }}
+                        </h3>
+                        @if(!empty($pregunta->contenido['audio_path']))
+                            <div style="margin: 15px 0;">
+                                <audio controls>
+                                    <source src="{{ asset('storage/' . $pregunta->contenido['audio_path']) }}" type="{{ $pregunta->contenido['audio_mime'] ?? 'audio/mpeg' }}">
+                                </audio>
+                            </div>
+                        @endif
 
-                    <div style="padding-left: 0.5rem;">
-                        @switch($pregunta->tipo)
-                            @case('multiple')
-                                @include('usuario.tests.partials._multiple', ['id' => $pregunta->id_pregunta, 'opciones'=> $contenido['opciones'], 'estado' => $estado[$pregunta->id_pregunta] ?? null])
-                            @break
-                            @case('booleana')
-                                @include('usuario.tests.partials._booleana', ['id' => $pregunta->id_pregunta, 'estado'=> $estado[$pregunta->id_pregunta] ?? null])
-                            @break
-                            @case('conecta')
-                                @include('usuario.tests.partials._conecta', ['id' => $pregunta->id_pregunta, 'parejas' => $contenido['parejas'], 'mezclada'=> $contenido['columna_b_mezclada'] ?? collect($contenido['parejas'])->pluck('b')->toArray(), 'estado' => $estado[$pregunta->id_pregunta] ?? null])
-                            @break
-                            @case('texto')
-                                @include('usuario.tests.partials._texto', ['id' => $pregunta->id_pregunta, 'estado'=> $estado[$pregunta->id_pregunta] ?? null])
-                            @break
-                        @endswitch
+                        <div style="padding-left: 0.5rem;">
+                            @switch($pregunta->tipo)
+                                @case('multiple')
+                                    @include('usuario.tests.partials._multiple', ['id' => $pregunta->id_pregunta, 'opciones'=> $contenido['opciones'], 'estado' => $estado[$pregunta->id_pregunta] ?? null])
+                                @break
+                                @case('booleana')
+                                    @include('usuario.tests.partials._booleana', ['id' => $pregunta->id_pregunta, 'estado'=> $estado[$pregunta->id_pregunta] ?? null])
+                                @break
+                                @case('conecta')
+                                    @include('usuario.tests.partials._conecta', ['id' => $pregunta->id_pregunta, 'parejas' => $contenido['parejas'], 'mezclada'=> $contenido['columna_b_mezclada'] ?? collect($contenido['parejas'])->pluck('b')->toArray(), 'estado' => $estado[$pregunta->id_pregunta] ?? null])
+                                @break
+                                @case('texto')
+                                    @include('usuario.tests.partials._texto', ['id' => $pregunta->id_pregunta, 'estado'=> $estado[$pregunta->id_pregunta] ?? null])
+                                @break
+
+                                @case('balance')
+                                    @include('usuario.tests.partials._balance', [
+                                        'id'       => $pregunta->id_pregunta,
+                                        'secciones'=> $contenido['secciones'],
+                                        'estado'   => $estado[$pregunta->id_pregunta] ?? null,
+                                    ])
+                                @break
+                            @endswitch
+                        </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
+        @endif
 
         <div style="margin-top: 2rem; text-align: right;">
-            @if(!isset($estado))
+            @if(!isset($nota))
                 <button type="submit" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Enviar Respuestas</button>
             @else
                 @if(auth()->user()->rol === 'profesor') 
@@ -97,7 +115,7 @@
     </form>
 </div>
 
-@if (Auth::user()->alumno && $test->tipo == 'examen' && !isset($estado))
+@if (Auth::user()->alumno && $test->tipo == 'examen' && !isset($nota))
     @php
         $segundosHastaCierre = now()->diffInSeconds($test->examen->fecha_cierre);
         $segundosPorDuracion = $test->examen->duracion * 60;
