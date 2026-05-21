@@ -7,26 +7,24 @@ use App\Models\Etiqueta;
 use App\Models\Modulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;  // para borrar audios
+use Illuminate\Support\Facades\Storage;
 
 class PreguntaService
 {
     public function crearPregunta(Request $request, $id_modulo) {
-        [$validated, $contenido, $etiquetas] = $this->prepararDatos($request);
+        [$validated, $contenido, $etiquetas] = $this->prepararDatos($request, $id_modulo);
 
-        // Subir nuevo audio (usa mezcladora de nombres para evitar conflictos si se suben 2 audios con el mismo nombre)
         if ($request->hasFile('audio')) {
             $path = $request->file('audio')->store('audios/preguntas', 'public');
             $contenido['audio_path'] = $path;
             $contenido['audio_mime'] = $request->file('audio')->getMimeType();
         }
 
-        // Usamos una transacción por si falla algo al guardar las etiquetas, que no se guarde la pregunta a medias
         return DB::transaction(function () use ($validated, $contenido, $id_modulo, $etiquetas) {
             $pregunta = Pregunta::create([
-                'tipo' => $validated['tipo'],
+                'tipo'      => $validated['tipo'],
                 'contenido' => $contenido,
-                'id_modulo' => $id_modulo
+                'id_modulo' => $id_modulo,
             ]);
 
             if (!empty($etiquetas)) {
@@ -38,36 +36,31 @@ class PreguntaService
     }
 
     public function actualizarPregunta(Request $request, Pregunta $pregunta) {
-        [$validated, $contenido, $etiquetas] = $this->prepararDatos($request);
+        // Obtenemos el id_modulo desde la propia pregunta para pasárselo a prepararDatos
+        [$validated, $contenido, $etiquetas] = $this->prepararDatos($request, $pregunta->id_modulo);
 
-        // Mantener la referencia del audio viejo
         $oldAudioPath = $pregunta->contenido['audio_path'] ?? null;
 
         if ($request->boolean('eliminar_audio') && $oldAudioPath) {
             Storage::disk('public')->delete($oldAudioPath);
 
-        // Subir nuevo audio (usa mezcladora de nombres para evitar conflictos si se suben 2 audios con el mismo nombre)
         } elseif ($request->hasFile('audio')) {
-            // Guardar el nuevo
             $path = $request->file('audio')->store('audios/preguntas', 'public');
             $contenido['audio_path'] = $path;
             $contenido['audio_mime'] = $request->file('audio')->getMimeType();
 
-            // Eliminamos el audio antiguo (Limpieza)
             if ($oldAudioPath && Storage::disk('public')->exists($oldAudioPath)) {
                 Storage::disk('public')->delete($oldAudioPath);
             }
         } else {
-            // Si no sube audio nuevo, se mantiene el viejo en el JSON
             if ($oldAudioPath) {
                 $contenido['audio_path'] = $oldAudioPath;
             }
         }
 
-        // Usamos una transacción por si falla algo al guardar las etiquetas, que no se guarde la pregunta a medias
         return DB::transaction(function () use ($pregunta, $validated, $contenido, $etiquetas) {
             $pregunta->update([
-                'tipo' => $validated['tipo'],
+                'tipo'      => $validated['tipo'],
                 'contenido' => $contenido,
             ]);
 
@@ -79,7 +72,11 @@ class PreguntaService
         });
     }
 
-    private function prepararDatos(Request $request) {
+    /**
+     * Valida el request y construye el array $contenido según el tipo de pregunta.
+     * Recibe $id_modulo para crear las etiquetas nuevas dentro del módulo correcto.
+     */
+    private function prepararDatos(Request $request, int $id_modulo) {
         $validated = $request->validate([
             'tipo'      => 'required|string|max:255',
             'enunciado' => 'required|string|max:255',
@@ -94,10 +91,10 @@ class PreguntaService
             'columna_b'   => 'nullable|required_if:tipo,conecta|array|min:2',
             'columna_b.*' => 'nullable|required_if:tipo,conecta|string|max:255',
 
-            // Balance (llega como JSON en un campo oculto)
+            // Balance
             'secciones' => 'nullable|required_if:tipo,balance|string',
 
-            // Respuesta (no aplica a conecta ni a balance)
+            // Respuesta (no aplica a conecta ni balance)
             'respuesta' => 'required_unless:tipo,conecta,balance|nullable|string|max:255',
 
             // Etiquetas
@@ -106,28 +103,28 @@ class PreguntaService
             'etiquetas_nuevas'       => 'nullable|array',
             'etiquetas_nuevas.*'     => 'string|max:255',
 
-            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a|max:10240', // 10MB máx (va a depender de como se configure el server)
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a|max:10240',
         ]);
 
-        // Construir $contenido según el tipo 
-        if ($validated['tipo'] == 'multiple') {
+        // Construir $contenido según el tipo
+        if ($validated['tipo'] === 'multiple') {
             $contenido = [
                 'enunciado' => $validated['enunciado'],
-                'opciones' => $validated['opciones'],
-                'respuesta' => $validated['respuesta']
+                'opciones'  => $validated['opciones'],
+                'respuesta' => $validated['respuesta'],
             ];
 
-        } else if ($validated['tipo'] == 'conecta') {
+        } elseif ($validated['tipo'] === 'conecta') {
             $parejas = [];
             foreach ($validated['columna_a'] as $index => $valorA) {
                 $parejas[] = [
                     'a' => $valorA,
-                    'b' => $validated['columna_b'][$index]
+                    'b' => $validated['columna_b'][$index],
                 ];
             }
             $contenido = [
                 'enunciado' => $validated['enunciado'],
-                'parejas'   => $parejas
+                'parejas'   => $parejas,
             ];
 
         } elseif ($validated['tipo'] === 'balance') {
@@ -137,7 +134,6 @@ class PreguntaService
                 throw new \InvalidArgumentException('El formato del balance no es válido.');
             }
 
-            // Limpiamos filas vacías antes de guardar
             foreach ($secciones as &$sec) {
                 foreach ($sec['bloques'] as &$bloque) {
                     $bloque['filas'] = array_values(
@@ -153,23 +149,37 @@ class PreguntaService
             ];
 
         } else {
-        // booleana, texto
-        $contenido = [
+            // booleana, texto
+            $contenido = [
                 'enunciado' => $validated['enunciado'],
-                'respuesta' => $validated['respuesta']
+                'respuesta' => $validated['respuesta'],
             ];
         }
 
-        // Etiquetas
+        // Etiquetas: solo las del módulo actual
         $etiquetas = [];
 
         if ($request->has('etiquetas_existentes')) {
-            $etiquetas = $request->etiquetas_existentes;
+            // Verificamos que las etiquetas existentes pertenecen al módulo actual
+            // para evitar que alguien inyecte ids de otros módulos
+            $etiquetasValidas = Etiqueta::where('id_modulo', $id_modulo)
+                ->whereIn('id_etiqueta', $request->etiquetas_existentes)
+                ->pluck('id_etiqueta')
+                ->toArray();
+
+            $etiquetas = $etiquetasValidas;
         }
 
         if ($request->has('etiquetas_nuevas')) {
             foreach ($request->etiquetas_nuevas as $nombreEtiqueta) {
-                $etiqueta = Etiqueta::firstOrCreate(['nombre' => strtolower(trim($nombreEtiqueta))]);
+                $nombre = strtolower(trim($nombreEtiqueta));
+
+                // firstOrCreate con id_modulo: la misma etiqueta puede existir
+                // en otro módulo sin conflicto gracias al índice único (id_modulo, nombre)
+                $etiqueta = Etiqueta::firstOrCreate(
+                    ['id_modulo' => $id_modulo, 'nombre' => $nombre]
+                );
+
                 $etiquetas[] = $etiqueta->id_etiqueta;
             }
         }
@@ -187,6 +197,7 @@ class PreguntaService
                 ? redirect()->route('profesor.tests.edit', [$modulo->id_modulo, $idTest])
                 : redirect()->route('profesor.tests.create', $modulo->id_modulo);
         }
+
         return redirect()->route('profesor.preguntas.index', $modulo->id_modulo);
     }
 }
