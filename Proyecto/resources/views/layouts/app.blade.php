@@ -8,7 +8,7 @@
     <title>@yield('title') - Sistema de Tests</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <!-- Favicon (icono de la web) -->
-    <link rel="icon" type="image/ico" sizes="64x64" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/ico" href="{{ asset('favicon.ico') }}">
 
 
     @stack('styles')
