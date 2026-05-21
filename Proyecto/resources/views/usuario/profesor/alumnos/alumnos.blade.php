@@ -37,43 +37,61 @@
     @endforeach
 
     @if (!$usuarios->isEmpty())
-        <div class="table-container">
-            <table class="main-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Apellidos</th>
-                        <th style="text-align: center;">Acceso al Módulo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($usuarios as $usuario)
-                        <tr>
-                            <td>{{ $usuario->nombre }}</td>
-                            <td>{{ $usuario->apellidos }}</td>
-                            <td style="text-align: center;">
-                                <input
-                                    type="checkbox"
-                                    name="alumnos_acceso[]"
-                                    value="{{ $usuario->id_usuario }}"
-                                    id="usuario-{{ $usuario->id_usuario }}"
-                                    form="form-accesos"
-                                    {{ in_array($usuario->id_usuario, old('alumnos_acceso', $alumnosConAcceso)) ? 'checked' : '' }}
-                                >
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar este Alumno? \n\n ESTA ACCIÓN NO SE PUEDE DESHACER');"
-                                     form="form-eliminar-{{ $usuario->id_usuario }}" class="btn btn-danger">
-                                        Eliminar
-                                    </button>
-                                </div>
-                            </td>
+        <div x-data="{
+                busqueda: '',
+                normalizar(texto) {
+                    if (!texto) return '';
+                    return String(texto).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '').trim();
+                },
+                coincide(nombre, apellidos) {
+                    let texto = this.normalizar(this.busqueda);
+                    if (!texto) return true;
+                    return this.normalizar(nombre + ' ' + apellidos).includes(texto);
+                }
+            }">
+
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <input type="search" x-model="busqueda" class="form-input" placeholder="Buscar alumno...">
+            </div>
+
+            <div class="table-container">
+                <table class="main-table">
+                    <thead>
+                        <tr x-show="coincide({{ Js::from($usuario->nombre) }}, {{ Js::from($usuario->apellidos) }})">
+                            <th>Nombre</th>
+                            <th>Apellidos</th>
+                            <th style="text-align: center;">Acceso al Módulo</th>
+                            <th>Acciones</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($usuarios as $usuario)
+                            <tr x-show="coincide({{ Js::from($usuario->nombre) }}, {{ Js::from($usuario->apellidos) }})">
+                                <td>{{ $usuario->nombre }}</td>
+                                <td>{{ $usuario->apellidos }}</td>
+                                <td style="text-align: center;">
+                                    <input
+                                        type="checkbox"
+                                        name="alumnos_acceso[]"
+                                        value="{{ $usuario->id_usuario }}"
+                                        id="usuario-{{ $usuario->id_usuario }}"
+                                        form="form-accesos"
+                                        {{ in_array($usuario->id_usuario, old('alumnos_acceso', $alumnosConAcceso)) ? 'checked' : '' }}
+                                    >
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar este Alumno? \n\n ESTA ACCIÓN NO SE PUEDE DESHACER');"
+                                        form="form-eliminar-{{ $usuario->id_usuario }}" class="btn btn-danger">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div style="margin-top: 1.5rem; text-align: right;">
