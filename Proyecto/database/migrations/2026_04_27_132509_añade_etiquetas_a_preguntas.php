@@ -12,8 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('etiquetas', function (Blueprint $table) {
-            $table->id('id_etiqueta'); 
-            $table->string('nombre')->unique();
+            $table->id('id_etiqueta');
+            $table->foreignId('id_modulo')
+                  ->constrained('modulos', 'id_modulo')
+                  ->cascadeOnDelete();
+            $table->string('nombre');
+
+            // Único por módulo: la misma palabra puede existir en módulos distintos
+            $table->unique(['id_modulo', 'nombre']);
         });
 
         Schema::create('etiqueta_pregunta', function (Blueprint $table) {
@@ -29,7 +35,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('etiqueta_pregunta');
-        
         Schema::dropIfExists('etiquetas');
     }
 };
