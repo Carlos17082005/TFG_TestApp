@@ -60,7 +60,7 @@
             <div class="table-container">
                 <table class="main-table">
                     <thead>
-                        <tr x-show="coincide({{ Js::from($usuario->nombre) }}, {{ Js::from($usuario->apellidos) }})">
+                        <tr>
                             <th>Nombre</th>
                             <th>Apellidos</th>
                             <th style="text-align: center;">Acceso al Módulo</th>
