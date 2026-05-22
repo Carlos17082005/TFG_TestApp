@@ -108,7 +108,7 @@
                 @if(auth()->user()->rol === 'profesor') 
                     <a href="{{ route('profesor.tests.index', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver a Tests</a>
                 @else
-                    <a href="{{ route('inicio.dashboardAlumno.mostrar', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver al Dashboard</a>
+                    <a href="{{ route('alumno.tests.practica', [$modulo->id_modulo]) }}" class="btn btn-secondary">Página de Ejericios</a>
                 @endif
             @endif
         </div>

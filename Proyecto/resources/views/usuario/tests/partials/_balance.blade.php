@@ -30,7 +30,7 @@
 {{-- =====================================================================
      MODO RESPUESTA: Tabla interactiva sin overflow y con columna de importes
      ===================================================================== --}}
-<div x-data="balanceApp({{ $id }}, {{ json_encode($secciones) }}, {{ json_encode($todosElementos) }})" class="balance-wrap">
+<div x-data="balanceApp({{ $id }}, {{ json_encode($secciones) }}, {{ json_encode($todosElementos) }}, {{ json_encode(old('respuestas.' . $id, [])) }})" class="balance-wrap">
     
     <div class="balance-main-grid">
         <div style="display: flex; width: 100%;">
@@ -45,7 +45,7 @@
                         <div class="bal-section-content">
                             <div class="bal-section-hdr">
                                 <div class="bal-col-nombre">
-                                    <span x-text="sec.titulo"></span>
+                                      <span x-text="sec.titulo"></span>
                                 </div>
                                 <div class="bal-col-importe style-hdr-total">
                                     <span x-text="fmtNum(totalSeccionCompleta(sec.key))"></span>
@@ -224,7 +224,7 @@
 
     {{-- Banco de elementos --}}
     <div class="bal-banco">
-        <div class="bal-banco-hdr">📋 Elementos disponibles</div>
+        <div class="bal-banco-hdr"> Elementos disponibles</div>
         <div class="bal-banco-grid">
             <template x-for="el in elementosDisponibles" :key="el.nombre">
                 <div class="bal-banco-item">
@@ -542,7 +542,7 @@
 @endif
 
 <script>
-function balanceApp(balId, secciones, todosElementos) {
+function balanceApp(balId, secciones, todosElementos, oldData = {}) {
     return {
         secciones,
         todosElementos,
@@ -640,9 +640,49 @@ function balanceApp(balId, secciones, todosElementos) {
             for (const sec of this.secciones) {
                 this.filas[sec.key] = {};
                 for (let bi = 0; bi < sec.bloques.length; bi++) {
-                    this.filas[sec.key][bi] = [{ nombre: '', importe: '' }];
+                    const filasGuardadas = oldData?.[sec.key]?.[bi];
+                    if (filasGuardadas) {
+                        const filasFiltradas = filasGuardadas
+                            .filter(f => f.nombre !== null && f.nombre !== '')
+                            .map(f => {
+                                // Buscar coincidencia exacta primero, luego case-insensitive
+                                const el = this.todosElementos.find(e => e.nombre === f.nombre)
+                                        ?? this.todosElementos.find(e =>
+                                            e.nombre.toLowerCase().trim() === f.nombre.toLowerCase().trim()
+                                        );
+                                return {
+                                    nombre:  f.nombre,          // ← SIEMPRE usar el nombre del old()
+                                    importe: el ? el.importe : f.importe  // importe del banco si existe, si no del old()
+                                };
+                            });
+                        this.filas[sec.key][bi] = filasFiltradas.length > 0
+                            ? filasFiltradas
+                            : [{ nombre: '', importe: '' }];
+                    } else {
+                        this.filas[sec.key][bi] = [{ nombre: '', importe: '' }];
+                    }
                 }
             }
+            // Primero calcular totales con los datos
+            this.calcTotales();
+            // Luego en el siguiente tick forzar que Alpine re-evalúe los x-model de los selects
+            this.$nextTick(() => {
+                // Re-asignar cada nombre para forzar que Alpine sincronice el select
+                for (const secKey in this.filas) {
+                    for (const bi in this.filas[secKey]) {
+                        this.filas[secKey][bi].forEach((fila, fi) => {
+                            if (fila.nombre) {
+                                const nombre = fila.nombre;
+                                fila.nombre = '';           // reset momentáneo
+                                this.$nextTick(() => {      // en el siguiente tick restaurar
+                                    fila.nombre = nombre;
+                                });
+                            }
+                        });
+                    }
+                }
+                this.calcTotales();
+            });
         }
     }
 }

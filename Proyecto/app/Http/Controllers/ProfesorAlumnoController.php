@@ -76,7 +76,7 @@ class ProfesorAlumnoController extends Controller
             return view('usuario.historial', compact('puntuaciones', 'modulo'));
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'No se ha podido acceder al historial'. $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se ha podido acceder al historial']);
         }
     }   
 }

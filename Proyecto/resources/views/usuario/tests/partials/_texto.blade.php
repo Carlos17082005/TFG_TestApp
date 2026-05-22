@@ -10,7 +10,7 @@
 @endphp
 
 <p style="all: unset; !important" class="{{ $class }}"></p>
-<input type="text" name="respuestas[{{ $id }}]" class="{{ $class }}" value="{{ $respUsuario }}" placeholder="Escribe tu respuesta..." autocomplete="off" {{ $disabled }} style="max-width: 100%;">
+<input type="text" name="respuestas[{{ $id }}]" class="{{ $class }}" value="{{ old('respuestas.' . $id, $respUsuario) }}" placeholder="Escribe tu respuesta..." autocomplete="off" {{ $disabled }} style="max-width: 100%;">
 
 @if ($estado && !$esCorrecta)
     <div class="correct-text" style="margin-top: 0.5rem; color: rgb(17, 0, 117)">Respuesta correcta: <strong>{{ $estado['correcta'] }}</strong></div>

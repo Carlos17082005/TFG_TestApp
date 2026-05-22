@@ -3,6 +3,10 @@
 @if(isset($modulo))
     @method('PUT')
     <h2 style="margin-bottom: 1.5rem;">Modificar Módulo</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="margin: 0; text-align: left;">Ajustes del Módulo</h1>
+        <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
 @else
     <h2 style="margin-bottom: 1.5rem;">Crear Módulo</h2>
 @endif
