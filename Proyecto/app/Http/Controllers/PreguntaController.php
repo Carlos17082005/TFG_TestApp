@@ -32,8 +32,8 @@ class PreguntaController extends Controller
             $this->preguntaService->crearPregunta($request, $modulo->id_modulo);
             return $this->preguntaService->redirigir($modulo);
         } catch(\Exception $e) {
-            return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
-        }
+           return back()->withErrors(['error' => 'Error al crear la pregunta, inténtalo de nuevo.']);
+        }        
     }
 
     public function edit(Modulo $modulo, Pregunta $pregunta) {
@@ -48,8 +48,8 @@ class PreguntaController extends Controller
             $this->preguntaService->actualizarPregunta($request, $pregunta);
             return $this->preguntaService->redirigir($modulo);
         } catch(\Exception $e) {
-            return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.' . $e->getMessage()]);
-        }
+           return back()->withErrors(['error' => 'Error al actualizar la pregunta, inténtalo de nuevo.']);
+        } 
     }
 
     public function destroy(Modulo $modulo, Pregunta $pregunta) {

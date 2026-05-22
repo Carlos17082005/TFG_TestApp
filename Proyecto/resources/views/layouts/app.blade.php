@@ -7,6 +7,9 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>@yield('title') - Sistema de Tests</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Favicon (icono de la web) -->
+    <link rel="icon" type="image/ico" href="{{ asset('favicon.ico') }}">
+
 
     @stack('styles')
 </head>

@@ -6,6 +6,7 @@ use App\Services\TestService;
 use App\Models\Pregunta;
 use App\Models\Test;
 use Illuminate\Support\Collection;
+use Illuminate\Http\Request;
 
 class TestService
 {
@@ -253,5 +254,33 @@ class TestService
             if (preg_match('/^\d{1,3}\.\d{3}$/', $valor)) { $valor = str_replace('.', '', $valor); }
         }
         return (float) preg_replace('/[^\d.]/', '', $valor);
+    }
+
+    public function validarRequest($request){
+        $validated = $request->validate([
+            'nombre'              => 'required|string|max:255',
+            'descripcion'         => 'required|string|max:255',
+            'tipo'                => 'required|in:practica,examen,borrador',
+            'preguntas'           => 'required|array|min:1',
+            'preguntas.*'         => 'exists:preguntas,id_pregunta',
+            'duracion'            => 'required_if:tipo,examen|nullable|integer|min:1',
+            'fecha_apertura'      => 'required_if:tipo,examen|nullable|date',
+            'fecha_cierre'        => 'required_if:tipo,examen|nullable|date|after:fecha_apertura',
+            'preguntas_a_mostrar' => 'nullable|integer|min:1',
+            'aleatorio'           => 'required|boolean',
+            'correccion'          => 'required|boolean',
+        ]);
+
+        return $validated;
+    }
+
+    public function validarYCalcularMostrar(Request $request): array {
+        $validated = $this->validarRequest($request);
+        $seleccionadas = count($request->input('preguntas', []));
+        $aMostrar = $validated['preguntas_a_mostrar'] ?? null;
+        if ($aMostrar !== null && $aMostrar > $seleccionadas) {
+            $aMostrar = $seleccionadas;
+        }
+        return [$validated, $aMostrar];
     }
 }

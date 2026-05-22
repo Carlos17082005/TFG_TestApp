@@ -15,7 +15,7 @@
             }
         @endphp
         <label class="{{ $class }}">
-            <input type="radio" name="respuestas[{{ $id }}]" value="{{ $valor }}" {{ $checked }} {{ $disabled }}>
+            <input type="radio" name="respuestas[{{ $id }}]" value="{{ $valor }}" {{ $estado ? $checked : (old('respuestas.' . $id) === $valor ? 'checked' : '') }} {{ $disabled }}>
             <span>{{ __('pregunta.' . $valor) }}</span>
         </label>
     @endforeach
