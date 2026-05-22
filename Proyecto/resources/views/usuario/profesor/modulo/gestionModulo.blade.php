@@ -77,7 +77,7 @@
                 <button type="submit" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.75rem 1.5rem;">
                     {{ isset($modulo) ? 'Actualizar Módulo' : 'Crear Módulo' }}
                 </button>
-                <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="boton_cancelar btn btn-secondary"><span class="volver_negrita">Cancelar</span></a>
+                <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo ?? null) }}" class="boton_cancelar btn btn-secondary"><span class="volver_negrita">Cancelar</span></a>
             </div>
         </form>
 
