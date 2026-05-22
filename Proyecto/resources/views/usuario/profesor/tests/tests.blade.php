@@ -18,13 +18,8 @@
 
     <h1>Listado de Tests</h1>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
-    </div>
-
-    <div style="text-align: right; margin-bottom: 2rem;">
-        <a href="{{ route('profesor.tests.create', $modulo->id_modulo) }}">
-            <button type="button" class="btn btn-primary">+ Crear nuevo test</button>
-        </a>
+        <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+        <a href="{{ route('profesor.tests.create', $modulo->id_modulo) }}"><button type="button" class="btn btn-primary">+ Crear nuevo test</button></a>
     </div>
 
     <div x-data="{

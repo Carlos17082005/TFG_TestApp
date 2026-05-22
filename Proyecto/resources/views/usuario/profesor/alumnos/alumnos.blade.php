@@ -22,9 +22,9 @@
 @section('content')
     <x-errores />
 
-    <h1>Gestión de Alumnos</h1>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+        <h1 style="margin: 0; text-align: left;">Gestión de Alumnos</h1>
+        <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
     </div>
 
     <form id="form-accesos" action="{{ route('profesor.alumnos.update', $modulo->id_modulo) }}" method="POST">
@@ -98,12 +98,8 @@
         </div>
 
         <div style="margin-top: 1.5rem; text-align: right;">
-            <button type="submit" form="form-accesos" class="btn btn-primary">
-                Guardar Cambios de Acceso
-            </button>
-            <button onclick="history.back()" class="boton_cancelar btn btn-primary">
-                <span class="volver_negrita">Cancelar</span>
-            </button>
+            <button type="submit" form="form-accesos" class="btn btn-primary">Guardar Cambios de Acceso</button>
+            <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="boton_cancelar btn btn-secondary"><span class="volver_negrita">Cancelar</span></a>
         </div>
 
     @else

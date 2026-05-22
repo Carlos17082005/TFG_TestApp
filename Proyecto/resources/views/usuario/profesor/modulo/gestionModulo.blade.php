@@ -10,9 +10,9 @@
             @csrf
             @if(isset($modulo))
                 @method('PUT')
-                <h2 style="margin-bottom: 1.5rem;">Modificar Módulo</h2>
+                <h1 style="margin-bottom: 1.5rem; text-align: left;">Modificar Módulo</h1>
             @else
-                <h2 style="margin-bottom: 1.5rem;">Crear Módulo</h2>
+                <h1 style="margin-bottom: 1.5rem; text-align: left;">Crear Módulo</h1>
             @endif
 
             <div class="form-group">
@@ -77,9 +77,7 @@
                 <button type="submit" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.75rem 1.5rem;">
                     {{ isset($modulo) ? 'Actualizar Módulo' : 'Crear Módulo' }}
                 </button>
-                <button type="reset" onclick="history.back()" class="boton_cancelar btn btn-primary" style="font-size: 1.05rem; padding: 0.75rem 1.5rem;">
-                    <span class="volver_negrita">Cancelar</span>
-                </button>
+                <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="boton_cancelar btn btn-secondary"><span class="volver_negrita">Cancelar</span></a>
             </div>
         </form>
 

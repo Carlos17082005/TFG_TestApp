@@ -21,15 +21,12 @@
 
 @section('content')
     <x-errores />
-    <h1>Banco de Preguntas</h1>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
-    </div>
 
-    <div style="text-align: right; margin-bottom: 2rem;">
-        <a href="{{ route('profesor.preguntas.create', $modulo->id_modulo) }}">
-            <button type="button" class="btn btn-primary">+ Crear nueva pregunta</button>
-        </a>
+    <h1>Banco de Preguntas</h1>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+        <a href="{{ route('profesor.preguntas.create', $modulo->id_modulo) }}"><button type="button" class="btn btn-primary">+ Crear nueva pregunta</button></a>
     </div>
 
     <div x-data="{
