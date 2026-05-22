@@ -108,7 +108,13 @@
                 @if(auth()->user()->rol === 'profesor') 
                     <a href="{{ route('profesor.tests.index', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver a Tests</a>
                 @else
-                    <a href="{{ route('alumno.tests.practica', [$modulo->id_modulo]) }}" class="btn btn-secondary">Página de Ejericios</a>
+                    @if(isset($test->tipo) && $test->tipo == 'examen')
+                        <a href="{{ route('alumno.tests.examen', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver a Examenes</a>
+                    @elseif(isset($test->tipo) && $test->tipo == 'practica')
+                        <a href="{{ route('alumno.tests.practica', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver a Ejericios</a>
+                    @else
+                        <a href="{{ route('inicio.dashboardAlumno.mostrar', [$modulo->id_modulo]) }}" class="btn btn-secondary">Volver al dashboard</a>
+                    @endif
                 @endif
             @endif
         </div>
