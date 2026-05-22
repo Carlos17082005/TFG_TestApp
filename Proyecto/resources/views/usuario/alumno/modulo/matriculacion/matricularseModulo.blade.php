@@ -22,6 +22,7 @@
                 <input type="text"
                         name="clave_matriculacion"
                         class="form-input"
+                        value="{{ old('clave_matriculacion') }}"
                         placeholder="Introduce la clave dada por tu profesor"
                         required
                         autofocus>

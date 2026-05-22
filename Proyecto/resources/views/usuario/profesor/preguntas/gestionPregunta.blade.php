@@ -5,15 +5,9 @@
 @push('styles')
 <style>
     :root {
-        /* Usamos el color de la base de datos */
         --color-modulo: {{ $modulo->color }};
-        
-        /* Opcional: Generar variantes con transparencia usando el mismo color */
-        /* Si tu color es Hex (ej: #4F46E5), puedes añadir opacidad al final */
-        --color-modulo-10: {{ $modulo->color }}1a; /* 10% de opacidad */
-        --color-modulo-20: {{ $modulo->color }}33; /* 20% de opacidad */
-        
-        /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
+        --color-modulo-10: {{ $modulo->color }}1a; 
+        --color-modulo-20: {{ $modulo->color }}33;
         --color-modulo-h: {{ $modulo->color }}; 
     }
 </style>
@@ -27,37 +21,57 @@
             ? route('profesor.preguntas.update', [$modulo->id_modulo, $pregunta->id_pregunta]) 
             : route('profesor.preguntas.store', $modulo->id_modulo);
 
-        $tipoData = $pregunta->tipo ?? "";
-        $enunciadoData = $pregunta->contenido['enunciado'] ?? "";
-        $respuestaData = $pregunta->contenido['respuesta'] ?? "";
+        // old() tiene prioridad; si no hay old, usamos el modelo (edición) o vacío (creación)
+        $tipoData      = old('tipo',      $pregunta->tipo                        ?? '');
+        $enunciadoData = old('enunciado', $pregunta->contenido['enunciado']      ?? '');
+        $respuestaData = old('respuesta', $pregunta->contenido['respuesta']      ?? '');
 
         // Opciones (múltiple)
+        // Prioridad: old('opciones') > modelo > vacío por defecto
         $opcionesData = [];
-        if ($edicion && isset($pregunta->contenido['opciones'])) {
+        $opcionesOld  = old('opciones');
+        if ($opcionesOld) {
+            foreach ($opcionesOld as $i => $valor) {
+                $opcionesData[] = ['id' => $i + 1, 'valor' => $valor];
+            }
+        } elseif ($edicion && isset($pregunta->contenido['opciones'])) {
             foreach ($pregunta->contenido['opciones'] as $i => $valor) {
                 $opcionesData[] = ['id' => $i + 1, 'valor' => $valor];
             }
         } else {
-            $opcionesData = [['id' => 1, 'valor' => ''],['id' => 2, 'valor' => ''],['id' => 3, 'valor' => '']];
+            $opcionesData = [['id' => 1, 'valor' => ''], ['id' => 2, 'valor' => ''], ['id' => 3, 'valor' => '']];
         }
-        
+
         // Parejas (conecta)
+        // Prioridad: old('columna_a') + old('columna_b') > modelo > vacío por defecto
         $parejasData = [];
-        if ($edicion && !empty($pregunta->contenido['parejas'])) {
+        $columnaAOld  = old('columna_a');
+        $columnaBOld  = old('columna_b');
+        if ($columnaAOld && $columnaBOld) {
+            foreach ($columnaAOld as $i => $valorA) {
+                $parejasData[] = ['id' => $i + 1, 'a' => $valorA, 'b' => $columnaBOld[$i] ?? ''];
+            }
+        } elseif ($edicion && !empty($pregunta->contenido['parejas'])) {
             foreach ($pregunta->contenido['parejas'] as $i => $pareja) {
                 $parejasData[] = ['id' => $i + 1, 'a' => $pareja['a'], 'b' => $pareja['b']];
             }
         } else {
-            $parejasData = [['id' => 1, 'a' => '', 'b' => ''],['id' => 2, 'a' => '', 'b' => '']];
+            $parejasData = [['id' => 1, 'a' => '', 'b' => ''], ['id' => 2, 'a' => '', 'b' => '']];
         }
 
         // Secciones (balance)
-        $balanceData = ($edicion && $tipoData === 'balance')
-            ? ($pregunta->contenido['secciones'] ?? null)
-            : null;
+        // Prioridad: old('secciones') JSON > modelo > null (Alpine usará defaultBalance)
+        $balanceDataRaw = old('secciones');
+        if ($balanceDataRaw) {
+            $balanceData = json_decode($balanceDataRaw, true) ?: null;
+        } elseif ($edicion && $tipoData === 'balance') {
+            $balanceData = $pregunta->contenido['secciones'] ?? null;
+        } else {
+            $balanceData = null;
+        }
 
         // Etiquetas
-            $etiquetasData = [];
+        $etiquetasData = [];
         if ($edicion && isset($pregunta->listaEtiquetas)) {
             $etiquetasData = $pregunta->listaEtiquetas->map(function($t) {
                 return ['id' => $t->id_etiqueta, 'nombre' => $t->nombre, 'es_nueva' => false];
@@ -86,7 +100,7 @@
                 <option value="multiple">Opción Múltiple</option>
                 <option value="booleana">Verdadero / Falso</option>
                 <option value="conecta">Conectar Columnas</option>
-                <option value="balance">Balance de Situación</option>
+                <option value="balance">Ejercicio de Balance</option>
             </select>
         </div>
 
@@ -226,8 +240,12 @@
             {{-- Campo oculto que envía las secciones como JSON --}}
             <input type="hidden" name="secciones" :value="JSON.stringify(balanceSecciones)">
 
-            <div class="be-grid">
+            <div style="display: flex; width: 100%;">
+                <div class="bal-outer-hdr" style="width: 50%; border-right: 1px solid #ccc; border-radius: 6px 0px 0px 6px;">Activo</div>
+                <div class="bal-outer-hdr" style="width: 50%; border-radius: 0px 6px 6px 0px;">Patrimonio neto y pasivo</div>
+            </div>
 
+            <div class="be-grid">
                 {{-- CELDA 1: Top Left (Activo No Corriente) --}}
                 <div class="be-col" style="border-bottom: 1px solid #ccc;">
                     <template x-for="sec in balanceSecciones.filter(s => s.col === 'left' && s.key === 'activo_nc')" :key="sec.key">

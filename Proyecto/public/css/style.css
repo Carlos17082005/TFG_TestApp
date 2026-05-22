@@ -543,7 +543,7 @@ span.volver_negrita{
     grid-template-columns: 1fr 1fr;
     border: 1px solid #ccc;
     border-top: 2px solid #888;
-    border-radius: 0 0 6px 6px;
+    border-radius: 6px;
     margin-top: -1px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -552,3 +552,23 @@ span.volver_negrita{
 .be-total-cell:first-child { border-right: 1px solid #ccc; }
 .be-total-ok       { color: #28a745; }
 .be-total-mismatch { color: #dc3545; }
+
+/* Estilo para los títulos de cada sección (Disponibles, Completados, etc.) */
+.seccion-titulo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--tx-2);
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-modulo);
+}
+
+/* Estilo para tests que no se pueden clicar (grises) */
+.test-disabled {
+    background-color: #f9fafb; 
+    border-left: 4px solid #9ca3af !important; 
+}
+.test-disabled h3 {
+    color: #4b5563;
+}

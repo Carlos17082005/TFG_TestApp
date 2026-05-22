@@ -9,11 +9,11 @@ class AlumnoTestController extends Controller
 {
     public function examenes(Modulo $modulo) {
         $tests = $modulo->tests()->where('tipo', 'examen')->get();
-        return view('usuario.alumno.tests', ['modulo' => $modulo, 'tests'  => $tests]);
+        return view('usuario.alumno.tests', ['modulo' => $modulo, 'tests'  => $tests, 'tipo'   => 'examen']);
     }
 
     public function practicas(Modulo $modulo) {
         $tests = $modulo->tests()->where('tipo', 'practica')->get();
-        return view('usuario.alumno.tests', ['modulo' => $modulo, 'tests'  => $tests]);
+        return view('usuario.alumno.tests', ['modulo' => $modulo, 'tests'  => $tests, 'tipo'   => 'practica']);
     }
 }

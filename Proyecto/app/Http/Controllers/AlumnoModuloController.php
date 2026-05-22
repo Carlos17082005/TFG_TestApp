@@ -83,7 +83,7 @@ class AlumnoModuloController extends Controller
 
             return redirect()->route('inicio.dashboardAlumno.mostrar');
         } catch(\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se ha podido abandonar el modulo, vuelva a intentar o contacte con el administrador']);
         }
     }
 }

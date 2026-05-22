@@ -5,15 +5,9 @@
 @push('styles')
 <style>
     :root {
-        /* Usamos el color de la base de datos */
         --color-modulo: {{ $modulo->color }};
-        
-        /* Opcional: Generar variantes con transparencia usando el mismo color */
-        /* Si tu color es Hex (ej: #4F46E5), puedes añadir opacidad al final */
-        --color-modulo-10: {{ $modulo->color }}1a; /* 10% de opacidad */
-        --color-modulo-20: {{ $modulo->color }}33; /* 20% de opacidad */
-        
-        /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
+        --color-modulo-10: {{ $modulo->color }}1a; 
+        --color-modulo-20: {{ $modulo->color }}33;
         --color-modulo-h: {{ $modulo->color }}; 
     }
 </style>
@@ -24,8 +18,8 @@
     
     <div style="max-width: 600px; margin: 0 auto;">
         
-        <h1 style="margin: 0; text-align: left;">Ajustes del Módulo</h1>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="margin: 0; text-align: left;">Ajustes del Módulo</h1>
             <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
         </div>
 
@@ -38,9 +32,7 @@
             <form method="POST" action="{{ route('alumno.ajustes.abandonar', $modulo->id_modulo) }}" onsubmit="return confirm('¿Estás totalmente seguro de que deseas abandonar este módulo?');" style="margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger" style="width: 100%;">
-                    Abandonar Módulo
-                </button>
+                <button type="submit" class="btn btn-danger" style="width: 100%;">Abandonar Módulo</button>
             </form>
         </div>
         

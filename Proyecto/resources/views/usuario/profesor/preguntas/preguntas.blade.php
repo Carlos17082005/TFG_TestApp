@@ -5,15 +5,9 @@
 @push('styles')
 <style>
     :root {
-        /* Usamos el color de la base de datos */
         --color-modulo: {{ $modulo->color }};
-        
-        /* Opcional: Generar variantes con transparencia usando el mismo color */
-        /* Si tu color es Hex (ej: #4F46E5), puedes añadir opacidad al final */
-        --color-modulo-10: {{ $modulo->color }}1a; /* 10% de opacidad */
-        --color-modulo-20: {{ $modulo->color }}33; /* 20% de opacidad */
-        
-        /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
+        --color-modulo-10: {{ $modulo->color }}1a; 
+        --color-modulo-20: {{ $modulo->color }}33;
         --color-modulo-h: {{ $modulo->color }}; 
     }
 </style>
@@ -21,15 +15,12 @@
 
 @section('content')
     <x-errores />
-    <h1>Banco de Preguntas</h1>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
-    </div>
 
-    <div style="text-align: right; margin-bottom: 2rem;">
-        <a href="{{ route('profesor.preguntas.create', $modulo->id_modulo) }}">
-            <button type="button" class="btn btn-primary">+ Crear nueva pregunta</button>
-        </a>
+    <h1>Banco de Preguntas</h1>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <a href="{{ route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+        <a href="{{ route('profesor.preguntas.create', $modulo->id_modulo) }}"><button type="button" class="btn btn-primary">+ Crear nueva pregunta</button></a>
     </div>
 
     <div x-data="{
