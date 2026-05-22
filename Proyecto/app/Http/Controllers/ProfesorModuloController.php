@@ -5,37 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\Modulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ProfesorModuloController extends Controller {
 
-    // Mostrar la vista de la creación del módulo
+    // Extraer las reglas de validación comunes para no repetirlas
+    private function getValidationRules(): array {
+        return [
+            'ciclo'               => 'required|string|max:255',
+            'modulo'              => 'required|string|max:255',
+            'color'               => 'required|string|max:7',
+            'idioma'              => 'required|string|max:2',
+            'clave_matriculacion' => 'required|string|min:4'
+        ];
+    }
 
+    // ================
+    // ==== CREAR ====
+    // ================
+
+    // Mostrar la vista de la creación del módulo
     public function create() {
         return view('usuario.profesor.modulo.gestionModulo');
     }
 
     // Crear el modulo
-
     public function store(Request $request) {
+        $validated = $request->validate($this->getValidationRules());
 
-        $validated = $request->validate([
-            'ciclo' => 'required|string|max:255',
-            'modulo' => 'required|string|max:255',
-            'color' => 'required|string|max:7',
-            'idioma' => 'required|string|max:2',
-            'clave_matriculacion' => 'required|string|min:4'
-        ]);
+        // Añadimos el ID del profesor al array validado antes de insertar
+        $validated['id_profesor'] = Auth::user()->profesor->id_profesor;
 
         try {
-            $modulo = Modulo::create([
-                'ciclo' => $validated['ciclo'],
-                'modulo' => $validated['modulo'],
-                'color' => $validated['color'],
-                'idioma' => $validated['idioma'],
-                'clave_matriculacion' => $validated['clave_matriculacion'],
-                'id_profesor' => Auth::user()->profesor->id_profesor,
-            ]);
+            // Pasamos el array completo a Eloquent directamente
+            $modulo = Modulo::create($validated);
 
             return redirect()->route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo);
         } catch(\Exception $e) {
@@ -53,30 +55,14 @@ class ProfesorModuloController extends Controller {
 
     // Editar módulo
     public function update(Request $request, Modulo $modulo) {
-        $validated = $request->validate([
-            'ciclo' => 'required|string|max:255',
-            'modulo' => 'required|string|max:255',
-            'color' => 'required|string|max:7',
-            'idioma' => 'required|string|max:2',
-            'clave_matriculacion' => 'required|string|min:4'
-        ]);
+        $validated = $request->validate($this->getValidationRules());
 
         try {
-            DB::beginTransaction();
+            // Actualizamos pasando directamente el array validado
+            $modulo->update($validated);
 
-            $modulo->update([
-                'ciclo' => $validated['ciclo'],
-                'modulo' => $validated['modulo'],
-                'color' => $validated['color'],
-                'idioma' => $validated['idioma'],
-                'clave_matriculacion' => $validated['clave_matriculacion'],
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('inicio.dashboardProfesor.mostrar', compact('modulo'));
+            return redirect()->route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo);
         } catch(\Exception $e) {
-            DB::rollBack();
             return back()->withErrors(['error' => 'No se ha podido editar el módulo, vuelve a intentarlo']);
         }
     }
