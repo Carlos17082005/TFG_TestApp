@@ -42,8 +42,19 @@
     <div style="max-width: 800px; margin: 0 auto;">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h1 style="margin: 0; text-align: left;">Tests Disponibles</h1>
-            <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">Volver al Panel</a>
+            <h1 style="margin: 0; text-align: left;">
+                @if(isset($tipo) && $tipo === 'examen')
+                    Exámenes Disponibles
+                @elseif(isset($tipo) && $tipo === 'practica')
+                    Prácticas Disponibles
+                @else
+                    Tests Disponibles
+                @endif
+            </h1>
+            
+            <a href="{{ route('inicio.dashboardAlumno.mostrar', $modulo->id_modulo) }}" class="btn btn-secondary">
+                Volver al Panel
+            </a>
         </div>
 
         @php $hayTests = false; @endphp
