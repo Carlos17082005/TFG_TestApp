@@ -10,26 +10,6 @@
         --color-modulo-20: {{ $modulo->color }}33;
         --color-modulo-h: {{ $modulo->color }}; 
     }
-
-    /* Estilo para los títulos de cada sección (Disponibles, Completados, etc.) */
-    .seccion-titulo {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--tx-2);
-        margin-top: 2.5rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--color-modulo);
-    }
-
-    /* Estilo para tests que no se pueden clicar (grises) */
-    .test-disabled {
-        background-color: #f9fafb; 
-        border-left: 4px solid #9ca3af !important; 
-    }
-    .test-disabled h3 {
-        color: #4b5563;
-    }
 </style>
 @endpush
 
@@ -62,35 +42,37 @@
             $no_disponibles = [];
 
             foreach ($tests as $test) {
-                // 1. ¿Ya lo ha hecho?
-                $hizoExamen = $alumno->puntuaciones()->where('id_test', $test->id_test)->exists();
-                
-                if ($hizoExamen) {
-                    $completados[] = $test;
-                    continue; // Pasamos al siguiente test, ya no hay que comprobar fechas
+                // Las prácticas siempre están disponibles, sin límite de intentos
+                if ($test->tipo == 'practica') {
+                    $disponibles[] = $test;
+                    continue;
                 }
 
-                // 2. Si no lo ha hecho, comprobamos las fechas (solo si es examen y tiene fechas)
-                if ($test->tipo == 'examen' && $test->examen) {
+                // A partir de aquí solo quedan exámenes
+
+                // 1. ¿Ya lo ha hecho?
+                $hizoExamen = $alumno->puntuaciones()->where('id_test', $test->id_test)->exists();
+
+                if ($hizoExamen) {
+                    $completados[] = $test;
+                    continue;
+                }
+
+                // 2. Comprobamos las fechas del examen
+                if ($test->examen) {
                     $ahora = now();
                     $apertura = \Carbon\Carbon::parse($test->examen->fecha_apertura);
                     $cierre = \Carbon\Carbon::parse($test->examen->fecha_cierre);
 
                     if ($ahora < $apertura) {
-                        // El test es en el futuro
                         $test->motivo_bloqueo = 'Se abre el ' . $apertura->format('d/m/Y H:i');
                         $no_disponibles[] = $test;
                     } elseif ($ahora > $cierre) {
-                        // El test ya se cerró
                         $test->motivo_bloqueo = 'Cerrado el ' . $cierre->format('d/m/Y H:i');
                         $no_disponibles[] = $test;
                     } else {
-                        // Está en fecha correcta
                         $disponibles[] = $test;
                     }
-                } else {
-                    // Si es práctica (y no está completada), siempre está disponible
-                    $disponibles[] = $test;
                 }
             }
         @endphp
