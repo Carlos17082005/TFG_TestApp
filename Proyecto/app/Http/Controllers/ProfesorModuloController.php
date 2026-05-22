@@ -39,7 +39,7 @@ class ProfesorModuloController extends Controller {
 
             return redirect()->route('inicio.dashboardProfesor.mostrar', $modulo->id_modulo);
         } catch(\Exception $e) {
-           return back()->withErrors(['error' => $e->getMessage()]);
+           return back()->withErrors(['error' => 'No se ha podido crear el modulo, vuelva a intentar o contacte con el administrador']);
         }
     }
 
