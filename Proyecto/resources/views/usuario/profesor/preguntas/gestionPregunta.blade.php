@@ -27,37 +27,57 @@
             ? route('profesor.preguntas.update', [$modulo->id_modulo, $pregunta->id_pregunta]) 
             : route('profesor.preguntas.store', $modulo->id_modulo);
 
-        $tipoData = $pregunta->tipo ?? "";
-        $enunciadoData = $pregunta->contenido['enunciado'] ?? "";
-        $respuestaData = $pregunta->contenido['respuesta'] ?? "";
+        // old() tiene prioridad; si no hay old, usamos el modelo (edición) o vacío (creación)
+        $tipoData      = old('tipo',      $pregunta->tipo                        ?? '');
+        $enunciadoData = old('enunciado', $pregunta->contenido['enunciado']      ?? '');
+        $respuestaData = old('respuesta', $pregunta->contenido['respuesta']      ?? '');
 
         // Opciones (múltiple)
+        // Prioridad: old('opciones') > modelo > vacío por defecto
         $opcionesData = [];
-        if ($edicion && isset($pregunta->contenido['opciones'])) {
+        $opcionesOld  = old('opciones');
+        if ($opcionesOld) {
+            foreach ($opcionesOld as $i => $valor) {
+                $opcionesData[] = ['id' => $i + 1, 'valor' => $valor];
+            }
+        } elseif ($edicion && isset($pregunta->contenido['opciones'])) {
             foreach ($pregunta->contenido['opciones'] as $i => $valor) {
                 $opcionesData[] = ['id' => $i + 1, 'valor' => $valor];
             }
         } else {
-            $opcionesData = [['id' => 1, 'valor' => ''],['id' => 2, 'valor' => ''],['id' => 3, 'valor' => '']];
+            $opcionesData = [['id' => 1, 'valor' => ''], ['id' => 2, 'valor' => ''], ['id' => 3, 'valor' => '']];
         }
-        
+
         // Parejas (conecta)
+        // Prioridad: old('columna_a') + old('columna_b') > modelo > vacío por defecto
         $parejasData = [];
-        if ($edicion && !empty($pregunta->contenido['parejas'])) {
+        $columnaAOld  = old('columna_a');
+        $columnaBOld  = old('columna_b');
+        if ($columnaAOld && $columnaBOld) {
+            foreach ($columnaAOld as $i => $valorA) {
+                $parejasData[] = ['id' => $i + 1, 'a' => $valorA, 'b' => $columnaBOld[$i] ?? ''];
+            }
+        } elseif ($edicion && !empty($pregunta->contenido['parejas'])) {
             foreach ($pregunta->contenido['parejas'] as $i => $pareja) {
                 $parejasData[] = ['id' => $i + 1, 'a' => $pareja['a'], 'b' => $pareja['b']];
             }
         } else {
-            $parejasData = [['id' => 1, 'a' => '', 'b' => ''],['id' => 2, 'a' => '', 'b' => '']];
+            $parejasData = [['id' => 1, 'a' => '', 'b' => ''], ['id' => 2, 'a' => '', 'b' => '']];
         }
 
         // Secciones (balance)
-        $balanceData = ($edicion && $tipoData === 'balance')
-            ? ($pregunta->contenido['secciones'] ?? null)
-            : null;
+        // Prioridad: old('secciones') JSON > modelo > null (Alpine usará defaultBalance)
+        $balanceDataRaw = old('secciones');
+        if ($balanceDataRaw) {
+            $balanceData = json_decode($balanceDataRaw, true) ?: null;
+        } elseif ($edicion && $tipoData === 'balance') {
+            $balanceData = $pregunta->contenido['secciones'] ?? null;
+        } else {
+            $balanceData = null;
+        }
 
         // Etiquetas
-            $etiquetasData = [];
+        $etiquetasData = [];
         if ($edicion && isset($pregunta->listaEtiquetas)) {
             $etiquetasData = $pregunta->listaEtiquetas->map(function($t) {
                 return ['id' => $t->id_etiqueta, 'nombre' => $t->nombre, 'es_nueva' => false];
