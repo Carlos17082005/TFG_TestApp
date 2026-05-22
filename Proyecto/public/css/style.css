@@ -543,7 +543,7 @@ span.volver_negrita{
     grid-template-columns: 1fr 1fr;
     border: 1px solid #ccc;
     border-top: 2px solid #888;
-    border-radius: 0 0 6px 6px;
+    border-radius: 6px;
     margin-top: -1px;
     font-size: 0.85rem;
     font-weight: 600;
