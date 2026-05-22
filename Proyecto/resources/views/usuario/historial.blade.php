@@ -5,15 +5,9 @@
 @push('styles')
 <style>
     :root {
-        /* Usamos el color de la base de datos */
         --color-modulo: {{ $modulo->color }};
-        
-        /* Opcional: Generar variantes con transparencia usando el mismo color */
-        /* Si tu color es Hex (ej: #4F46E5), puedes añadir opacidad al final */
-        --color-modulo-10: {{ $modulo->color }}1a; /* 10% de opacidad */
-        --color-modulo-20: {{ $modulo->color }}33; /* 20% de opacidad */
-        
-        /* Para el hover, podrías simplemente usar el mismo o uno ligeramente distinto */
+        --color-modulo-10: {{ $modulo->color }}1a; 
+        --color-modulo-20: {{ $modulo->color }}33;
         --color-modulo-h: {{ $modulo->color }}; 
     }
 </style>
