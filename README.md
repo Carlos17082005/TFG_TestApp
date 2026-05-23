@@ -23,6 +23,7 @@ Proyecto Intermodular · 2ºDAW · Curso 2025/2026
 </div>
 
 ---
+
 <div align="center">
 
 ## 👥 Equipo
@@ -32,6 +33,7 @@ Proyecto Intermodular · 2ºDAW · Curso 2025/2026
 | Álvaro Claudio de las Mozas |
 | Carlos Gabriel García Guzmán |
 | Miguel Ángel Durán Soto |
+
 </div>
 
 ---
@@ -42,13 +44,12 @@ TestApp conecta profesores y alumnos dentro de **módulos formativos**. El profe
 
 **Lo que hace diferente a TestApp:**
 
-- **5 tipos de pregunta** adaptados a distintas materias: opción múltiple, verdadero/falso, respuesta de texto, conectar columnas y balance contable.
-- **Audio adjunto** en cualquier pregunta como apoyo al enunciado.
+- **Varios tipos de pregunta** adaptados a distintas materias: opción múltiple, verdadero/falso, respuesta de texto, conectar columnas y balance contable.
+- **Contenido multimedia adjunto** en cualquier pregunta como apoyo al enunciado.
 - **Exámenes con control total**: fecha de apertura, fecha de cierre, duración con temporizador, un único intento por alumno y envío automático al acabar el tiempo.
 - **Corrección automática** con nota sobre 10 y feedback visual por pregunta (configurable).
 - **Correo de bienvenida asíncrono** mediante cola de jobs de Laravel.
-- **Color de módulo personalizable** que se propaga como variable CSS a toda la interfaz del módulo.
-
+- **Color de módulo personalizable** que se propaga como variable CSS a toda la interfaz.
 
 ---
 
@@ -58,9 +59,9 @@ TestApp conecta profesores y alumnos dentro de **módulos formativos**. El profe
 <summary><b>📝 Gestión de Preguntas</b></summary>
 <br/>
 
-- Creación de preguntas de distintos tipos: **tipo test**, **relacionar**, **selección múltiple**, entre otros.
-- Categorización por contenidos: RA's, unidades, segmentación, etc.
-- Clasificación por dificultad: 🟢 **Fácil** · 🟡 **Intermedio** · 🔴 **Difícil**
+- Cinco tipos de pregunta: **múltiple**, **verdadero/falso**, **texto libre**, **conectar columnas** y **balance contable**.
+- Contenido multimedia adjunto por pregunta (audio MP3, WAV, OGG, M4A).
+- Etiquetas libres para organizar y filtrar el banco de preguntas.
 
 </details>
 
@@ -68,19 +69,20 @@ TestApp conecta profesores y alumnos dentro de **módulos formativos**. El profe
 <summary><b>📊 Gestión de Tests</b></summary>
 <br/>
 
-- Creación de **tests de práctica** y **tests de evaluación**.
-- Selección de preguntas de forma **manual** o **automática** con filtros de aleatoriedad:
-  - Número de preguntas, categoría y distribución por dificultad.
-  - Opción de generar un test **único por alumno**, seleccionando preguntas distintas dentro de los mismos filtros.
+- Tres tipos: **práctica** (intentos ilimitados), **examen** (fecha de apertura/cierre, duración y un único intento) y **borrador** (no visible para alumnos).
+- Configuración de número de preguntas a mostrar (sorteo aleatorio de X sobre Y) y orden aleatorio.
+- Corrección visible o solo nota, configurable por test.
+- Sistema de borrador en sesión: el formulario del test se conserva al navegar a crear una pregunta nueva.
 
 </details>
 
 <details>
-<summary><b>📈 Seguimiento de Resultados</b></summary>
+<summary><b>👥 Gestión de Alumnos</b></summary>
 <br/>
 
-- Acceso al historial de todos los tests finalizados por los alumnos.
-- Consulta de puntuaciones individuales y seguimiento del progreso.
+- Los alumnos se matriculan mediante una clave de acceso definida por el profesor.
+- Activación o desactivación del acceso por alumno sin expulsarlo del módulo.
+- Historial completo de puntuaciones del grupo: alumno, test, nota y duración del intento.
 
 </details>
 
@@ -92,9 +94,9 @@ TestApp conecta profesores y alumnos dentro de **módulos formativos**. El profe
 <summary><b>✏️ Realización de Tests</b></summary>
 <br/>
 
-- Listado de pruebas disponibles, diferenciando claramente **tests de práctica** y **tests de evaluación**.
-- Interacción con los distintos tipos de preguntas diseñados por el profesor.
-- En tests configurados automáticamente, el alumno recibe un cuestionario **único y personalizado**, respetando la dificultad y los contenidos establecidos.
+- Listado diferenciado de prácticas disponibles y exámenes (disponibles, no disponibles y completados).
+- Temporizador regresivo en exámenes con envío automático al agotarse el tiempo.
+- Corrección inmediata con feedback visual por pregunta si el profesor lo ha habilitado.
 
 </details>
 
@@ -102,16 +104,13 @@ TestApp conecta profesores y alumnos dentro de **módulos formativos**. El profe
 <summary><b>📉 Consulta de Resultados</b></summary>
 <br/>
 
-- Historial de tests finalizados con sus puntuaciones.
-- Revisión detallada de cada entrega: preguntas **acertadas** ✅ y **falladas** ❌.
+- Historial propio de resultados por módulo: test, tipo, nota obtenida y duración del intento.
 
 </details>
 
 ---
 
 ## 📸 Capturas de pantalla
-
-> Añade las capturas en la carpeta `docs/screenshots/` y actualiza las rutas.
 
 | Vista | |
 |-------|-|
@@ -177,13 +176,14 @@ Las relaciones pivot relevantes son:
 El campo `contenido` de la tabla `preguntas` es **JSON polimórfico** (accedido como `AsArrayObject` de Eloquent) con estructura distinta según el tipo de pregunta.
 
 ---
+
 ## 🛠️ Tecnologías
 
 <div align="center">
 
 | Capa | Tecnología |
 |------|------------|
-| Backend | Laravel 11 · PHP 8.2 |
+| Backend | Laravel 12 · PHP 8.2 |
 | Frontend | Blade · HTML5 · CSS3 |
 | Interactividad cliente | Alpine.js · JavaScript |
 | Base de datos | MySQL / MariaDB |
@@ -221,6 +221,7 @@ cp .env.example .env
 # 4. Generar la clave de aplicación
 php artisan key:generate
 ```
+
 Edita el archivo `.env` con tus datos:
 
 ```env
@@ -288,38 +289,36 @@ php artisan queue:flush
 
 ## 🚀 Despliegue en InfinityFree
 
-Desde el panel de InfinityFree:
-1. Se crea un subdominio gratuito
-2. Se crea la base de datos mediante phpMyAdmin y se ejecuta un SQL para crear tablas y datos (ya que no hay acceso a la consola)
-3. Se suben los archivos del proyecto.
-4. Se configura el archivo **.env** con los datos de la Base de Datos de InfinityFree 
+1. Crear un subdominio gratuito desde el panel de InfinityFree.
+2. Crear la base de datos mediante phpMyAdmin e importar el SQL con la estructura inicial.
+3. Subir los archivos del proyecto por FTP.
+4. Configurar el `.env` con los datos de conexión proporcionados por InfinityFree:
 
-```bash
+```env
 DB_CONNECTION=mysql
-DB_HOST=sq1208.infinityfree.com
+DB_HOST=<host_de_infinityfree>
 DB_PORT=3306
-DB_DATABASE=ife_41889059_db_duolingo
-DB_USERNAME=1fe 41889059
-DB_PASSWORD=TXI9NMNM3oc
+DB_DATABASE=<nombre_de_bd>
+DB_USERNAME=<usuario>
+DB_PASSWORD=<contraseña>
 ```
 
-5. Se configura el archivo **.htaccess** 
+5. Configurar el `.htaccess` en la raíz del proyecto para redirigir el tráfico a la carpeta `public/`:
 
-```bash
+```apache
 <IfModule mod_rewrite.c>
-        RewriteEngine On
-
-        # Redirigir todo el tráfico a la carpeta public
-        RewriteRule ^(.*)$ public/$1 [L]
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 ```
 
+6. Crear el enlace simbólico de almacenamiento (si hay acceso a consola):
+
 ```bash
-php artisan migrate --force
 php artisan storage:link
 ```
 
-6. Para el procesamiento de la cola de correos, configura un **cron job** en el panel:
+7. Para el procesamiento de la cola de correos, configurar un **cron job** en el panel:
 
 ```bash
 php /ruta/absoluta/al/proyecto/artisan queue:work --stop-when-empty
@@ -332,45 +331,19 @@ php /ruta/absoluta/al/proyecto/artisan queue:work --stop-when-empty
 ```
 app/
 ├── Http/
-│   ├── Controllers/
-│   │   ├── AuthController.php
-│   │   ├── InicioController.php
-│   │   ├── PreguntaController.php
-│   │   ├── TestController.php
-│   │   ├── RealizarTestController.php
-│   │   ├── ProfesorModuloController.php
-│   │   ├── ProfesorAlumnoController.php
-│   │   ├── AlumnoModuloController.php
-│   │   └── AlumnoTestController.php
-│   └── Middleware/
-│       ├── EsProfesor.php
-│       ├── EsAlumno.php
-│       ├── ModuloPerteneceProfesor.php
-│       ├── ModuloPerteneceAlumno.php
-│       └── AlumnoTieneAccesoExamen.php
-├── Mail/
-│   └── RegistroAlumno.php          # Mailable con ShouldQueue
-├── Models/
-│   ├── Usuario.php
-│   ├── Profesor.php
-│   ├── Alumno.php
-│   ├── Modulo.php
-│   ├── Pregunta.php                # contenido JSON polimórfico (AsArrayObject)
-│   ├── Etiqueta.php
-│   ├── Test.php
-│   ├── Examen.php
-│   └── Puntuacion.php
-└── Services/
-    ├── InicioService.php
-    ├── PreguntaService.php
-    └── TestService.php
+│   ├── Controllers/    # Un controlador por entidad y rol (profesor y alumno)
+│   └── Middleware/     # Autorización: rol, pertenencia al módulo y acceso a examen
+├── Mail/               # Mailable de bienvenida con envío asíncrono (ShouldQueue)
+├── Models/             # Modelos Eloquent con relaciones y casts definidos
+└── Services/           # Lógica de negocio compleja extraída de los controladores
 database/
-└── migrations/                     # Esquema completo de la BD
-resources/views/                    # Plantillas Blade
+└── migrations/         # Esquema completo de la base de datos
+resources/
+└── views/              # Plantillas Blade organizadas por rol y sección
 routes/
-└── web.php                         # Rutas agrupadas por rol con middleware
+└── web.php             # Rutas agrupadas por middleware de rol
 storage/app/public/
-└── audios/preguntas/               # Audios subidos por los profesores
+└── audios/preguntas/   # Archivos de audio subidos por los profesores
 ```
 
 ---
@@ -378,14 +351,16 @@ storage/app/public/
 ## 📄 Licencia
 
 Proyecto desarrollado con fines académicos como Trabajo de Fin de Grado.  
-IES · Familia Profesional: Informática y Comunicaciones · 2ºDAW · 2025/2026.
+IES · Desarrollo de Aplicaciones Web · 2º Curso · 2025/2026.
 
-**© 2026, Equipo TestApp.** 
-
-Este proyecto se distribuye bajo la licencia **Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)**.
+Este proyecto se distribuye bajo la licencia **Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)**.  
 Para leer el texto legal completo, visita el [sitio web de Creative Commons](https://creativecommons.org).
 
 <div align="center">
+<br/>
+
+**© 2026, Equipo TestApp.**
+
 <br/>
 <sub>Hecho con ❤️ por el equipo de TestApp</sub>
 </div>
