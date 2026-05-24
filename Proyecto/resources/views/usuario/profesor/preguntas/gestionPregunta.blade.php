@@ -263,10 +263,12 @@
                                                    x-model="fila.nombre"
                                                    placeholder="Nombre del elemento"
                                                    :disabled="tipo_pregunta !== 'balance'">
-                                            <input type="text"
+                                            <input type="number"
                                                    class="form-input be-importe"
                                                    x-model="fila.importe"
                                                    placeholder="0"
+                                                   step="0.01"
+                                                   min="0"
                                                    :disabled="tipo_pregunta !== 'balance'"
                                                    @input="$dispatch('balance-changed')">
                                             <button type="button" class="be-btn-del-fila"
@@ -304,10 +306,12 @@
                                                        x-model="fila.nombre"
                                                        placeholder="Nombre del elemento"
                                                        :disabled="tipo_pregunta !== 'balance'">
-                                                <input type="text"
+                                                <input type="number"
                                                        class="form-input be-importe"
                                                        x-model="fila.importe"
                                                        placeholder="0"
+                                                       step="0.01"
+                                                       min="0"
                                                        :disabled="tipo_pregunta !== 'balance'"
                                                        @input="$dispatch('balance-changed')">
                                                 <button type="button" class="be-btn-del-fila"
@@ -344,10 +348,12 @@
                                                    x-model="fila.nombre"
                                                    placeholder="Nombre del elemento"
                                                    :disabled="tipo_pregunta !== 'balance'">
-                                            <input type="text"
+                                            <input type="number"
                                                    class="form-input be-importe"
                                                    x-model="fila.importe"
                                                    placeholder="0"
+                                                   step="0.01"
+                                                   min="0"
                                                    :disabled="tipo_pregunta !== 'balance'"
                                                    @input="$dispatch('balance-changed')">
                                             <button type="button" class="be-btn-del-fila"
@@ -383,10 +389,12 @@
                                                    x-model="fila.nombre"
                                                    placeholder="Nombre del elemento"
                                                    :disabled="tipo_pregunta !== 'balance'">
-                                            <input type="text"
+                                            <input type="number"
                                                    class="form-input be-importe"
                                                    x-model="fila.importe"
                                                    placeholder="0"
+                                                   step="0.01"
+                                                   min="0"
                                                    :disabled="tipo_pregunta !== 'balance'"
                                                    @input="$dispatch('balance-changed')">
                                             <button type="button" class="be-btn-del-fila"
@@ -463,7 +471,7 @@
     </form>
 
     <script>
-        // ── Estructura por defecto del balance (PGC español) ────────────────
+        // ── Estructura por defecto del balance ────────────────
         const defaultBalance = [
             { key: 'activo_nc', titulo: 'A) Activo no corriente', col: 'left', bloques: [
                 { label: 'Inmovilizado intangible',               filas: [{ nombre: '', importe: '' }] },
@@ -520,14 +528,13 @@
                 },
                 // Balance: totales en vivo
                 beTotalNum(col) {
-                    return this.balanceSecciones
+                    let total = this.balanceSecciones
                         .filter(s => s.col === col)
                         .flatMap(s => s.bloques)
                         .flatMap(b => b.filas)
-                        .reduce((sum, f) => {
-                            const raw = (f.importe || '').replace(/\./g, '').replace(',', '.');
-                            return sum + (parseFloat(raw) || 0);
-                        }, 0);
+                        .reduce((sum, f) => sum + (parseFloat(f.importe) || 0), 0);
+                        
+                    return Math.round(total * 100) / 100;
                 },
                 beTotalFmt(col) {
                     return this.beTotalNum(col).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -535,7 +542,25 @@
                 get beBalanceado() {
                     const a = this.beTotalNum('left');
                     const p = this.beTotalNum('right');
-                    return a > 0 && Math.abs(a - p) < 0.01;
+                    return a > 0 && a === p;
+                },
+
+                // Sanitiza el campo importe: solo permite dígitos, coma decimal y puntos de millar.
+                // Convierte el punto decimal anglosajón a coma para consistencia con normalizarImporte().
+                sanitizarImporte(valor) {
+                    let v = String(valor).replace(/[^0-9.,]/g, '');
+                    const partesPunto = v.split('.');
+                    const partesСoma  = v.split(',');
+                    if (partesPunto.length === 2 && partesСoma.length === 1) {
+                        v = partesPunto[0] + ',' + partesPunto[1];
+                    }
+                    const idx = v.lastIndexOf(',');
+                    if (idx !== -1) {
+                        const entera  = v.slice(0, idx).replace(/,/g, '');
+                        const decimal = v.slice(idx + 1).replace(/[,.]/g, '');
+                        v = entera + ',' + decimal;
+                    }
+                    return v;
                 },
 
                 // utilidades

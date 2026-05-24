@@ -181,7 +181,7 @@ class TestService
             'multiple' => $this->corregirTextoNormalizado($respUsuario, $respCorrecta),
             'booleana' => $this->corregirExacto($respUsuario, $respCorrecta),
             'texto'    => $this->corregirTextoNormalizado($respUsuario, $respCorrecta),
-            'conecta'  => $this->corregirConecta($respUsuario, $contenido['parejas']),
+            'conecta'  => $this->corregirConecta($respUsuario, $contenido['parejas'], $contenido['columna_b_mezclada'] ?? []),
             default    => 0.0,
         };
     }
@@ -194,11 +194,20 @@ class TestService
         return $this->normalizar((string)$usuario) === $this->normalizar((string)$correcta) ? 1.0 : 0.0;
     }
 
-    private function corregirConecta(mixed $usuario, array $parejas): float {
+    private function corregirConecta(mixed $usuario, array $parejas, array $mezclada = []): float {
         if (!is_array($usuario) || empty($parejas)) return 0.0;
         $total = count($parejas); $aciertos = 0;
         foreach ($parejas as $index => $pareja) {
             $seleccionado = $usuario[$index] ?? null;
+
+            if ($seleccionado !== null && $seleccionado !== '' && !empty($mezclada)) {
+                $lower = strtolower(trim((string) $seleccionado));
+                if (strlen($lower) === 1 && $lower >= 'a' && $lower <= 'z') {
+                    $letterIndex = ord($lower) - 97;
+                    $seleccionado = $mezclada[$letterIndex] ?? $seleccionado;
+                }
+            }
+
             if ($this->normalizar((string)$seleccionado) === $this->normalizar($pareja['b'])) { $aciertos++; }
         }
         return $total > 0 ? $aciertos / $total : 0.0;

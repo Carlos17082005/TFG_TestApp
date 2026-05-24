@@ -23,7 +23,13 @@
     // ALEATORIZAR EL ORDEN DE LOS ELEMENTOS AQUÍ
     shuffle($todosElementos);
 
-    $normImporte = fn($v) => (float) str_replace(['.', ' '], '', str_replace(',', '.', trim((string) $v)));
+    $normImporte = function($v) {
+        $v = trim(str_replace(' ', '', (string) $v));
+        if (strpos($v, ',') !== false) {
+            return (float) str_replace(',', '.', str_replace('.', '', $v));
+        }
+        return (float) $v;
+    };
 @endphp
 
 @if(!$estado)
@@ -256,7 +262,24 @@
         }
         return $total;
     };
-    $fmtNum = fn($n) => number_format($n, 0, ',', '.');
+    $calcSecTotalCorrecto = function($sec) use ($normImporte) {
+        $total = 0;
+        foreach ($sec['bloques'] as $bloque) {
+            foreach ($bloque['filas'] as $fila) {
+                if (!empty($fila['nombre'])) {
+                    $total += $normImporte($fila['importe'] ?? '');
+                }
+            }
+        }
+        return $total;
+    };
+    $fmtNum = function($n) {
+        if (floor($n) == $n) {
+            return number_format($n, 0, ',', '.');
+        }
+        $formateado = number_format($n, 2, ',', '.');
+        return rtrim(rtrim($formateado, '0'), ',');
+    };
 @endphp
 <div class="balance-wrap">
     <div class="balance-main-grid">
@@ -274,8 +297,17 @@
                                 <div class="bal-col-nombre">
                                     <span>{{ $sec['titulo'] }}</span>
                                 </div>
+                                @php
+                                    $secTotalUsuario  = $calcSecTotalCompleta($sec, $userResp);
+                                    $secTotalCorrecto = $calcSecTotalCorrecto($sec);
+                                    $secTotalOk       = abs($secTotalUsuario - $secTotalCorrecto) < 0.01;
+                                @endphp
                                 <div class="bal-col-importe style-hdr-total">
-                                    <span>{{ $fmtNum($calcSecTotalCompleta($sec, $userResp)) }}</span>
+                                    @if($secTotalOk)
+                                        <span>{{ $fmtNum($secTotalUsuario) }}</span>
+                                    @else
+                                        <span style="color:#2563eb;font-weight:bold;" title="Total correcto">{{ $fmtNum($secTotalCorrecto) }}</span>
+                                    @endif
                                 </div>
                                 <div class="bal-col-accion"></div>
                             </div>
@@ -335,8 +367,17 @@
                                 <div class="bal-col-nombre">
                                     <span>{{ $sec['titulo'] }}</span>
                                 </div>
+                                @php
+                                    $secTotalUsuario  = $calcSecTotalCompleta($sec, $userResp);
+                                    $secTotalCorrecto = $calcSecTotalCorrecto($sec);
+                                    $secTotalOk       = abs($secTotalUsuario - $secTotalCorrecto) < 0.01;
+                                @endphp
                                 <div class="bal-col-importe style-hdr-total">
-                                    <span>{{ $fmtNum($calcSecTotalCompleta($sec, $userResp)) }}</span>
+                                    @if($secTotalOk)
+                                        <span>{{ $fmtNum($secTotalUsuario) }}</span>
+                                    @else
+                                        <span style="color:#2563eb;font-weight:bold;" title="Total correcto">{{ $fmtNum($secTotalCorrecto) }}</span>
+                                    @endif
                                 </div>
                                 <div class="bal-col-accion"></div>
                             </div>
@@ -398,8 +439,17 @@
                                 <div class="bal-col-nombre">
                                     <span>{{ $sec['titulo'] }}</span>
                                 </div>
+                                @php
+                                    $secTotalUsuario  = $calcSecTotalCompleta($sec, $userResp);
+                                    $secTotalCorrecto = $calcSecTotalCorrecto($sec);
+                                    $secTotalOk       = abs($secTotalUsuario - $secTotalCorrecto) < 0.01;
+                                @endphp
                                 <div class="bal-col-importe style-hdr-total">
-                                    <span>{{ $fmtNum($calcSecTotalCompleta($sec, $userResp)) }}</span>
+                                    @if($secTotalOk)
+                                        <span>{{ $fmtNum($secTotalUsuario) }}</span>
+                                    @else
+                                        <span style="color:#2563eb;font-weight:bold;" title="Total correcto">{{ $fmtNum($secTotalCorrecto) }}</span>
+                                    @endif
                                 </div>
                                 <div class="bal-col-accion"></div>
                             </div>
@@ -459,8 +509,17 @@
                                 <div class="bal-col-nombre">
                                     <span>{{ $sec['titulo'] }}</span>
                                 </div>
+                                @php
+                                    $secTotalUsuario  = $calcSecTotalCompleta($sec, $userResp);
+                                    $secTotalCorrecto = $calcSecTotalCorrecto($sec);
+                                    $secTotalOk       = abs($secTotalUsuario - $secTotalCorrecto) < 0.01;
+                                @endphp
                                 <div class="bal-col-importe style-hdr-total">
-                                    <span>{{ $fmtNum($calcSecTotalCompleta($sec, $userResp)) }}</span>
+                                    @if($secTotalOk)
+                                        <span>{{ $fmtNum($secTotalUsuario) }}</span>
+                                    @else
+                                        <span style="color:#2563eb;font-weight:bold;" title="Total correcto">{{ $fmtNum($secTotalCorrecto) }}</span>
+                                    @endif
                                 </div>
                                 <div class="bal-col-accion"></div>
                             </div>
@@ -527,14 +586,39 @@
             }
         @endphp
         
+        @php
+            $totalActivoCorrecto = 0;
+            $totalPasivoCorrecto = 0;
+            foreach ($leftSecs as $sec) {
+                foreach ($sec['bloques'] as $bloque) {
+                    foreach ($bloque['filas'] as $fila) {
+                        $totalActivoCorrecto += $normImporte($fila['importe'] ?? '');
+                    }
+                }
+            }
+            foreach ($rightSecs as $sec) {
+                foreach ($sec['bloques'] as $bloque) {
+                    foreach ($bloque['filas'] as $fila) {
+                        $totalPasivoCorrecto += $normImporte($fila['importe'] ?? '');
+                    }
+                }
+            }
+            $activoCuadra = abs($totalActivo - $totalActivoCorrecto) < 0.01;
+            $pasivoCuadra = abs($totalPasivo - $totalPasivoCorrecto) < 0.01;
+        @endphp
+
         <div style="display: flex; width: 100%;">
             <div class="bal-outer-footer" style="width: 50%; border-right: 1px solid #ccc;">
                 <div class="bal-footer-label">Total Activo (A+B)</div>
-                <div class="bal-footer-val">{{ $fmtNum($totalActivo) }}</div>
+                <div class="bal-footer-val" style="color: {{ $activoCuadra ? '#16a34a' : '#2563eb' }};">
+                    {{ $fmtNum($activoCuadra ? $totalActivo : $totalActivoCorrecto) }}
+                </div>
             </div>
             <div class="bal-outer-footer" style="width: 50%;">
                 <div class="bal-footer-label">Total Patrimonio neto y Pasivo (A+B+C)</div>
-                <div class="bal-footer-val">{{ $fmtNum($totalPasivo) }}</div>
+                <div class="bal-footer-val" style="color: {{ $pasivoCuadra ? '#16a34a' : '#2563eb' }};">
+                    {{ $fmtNum($pasivoCuadra ? $totalPasivo : $totalPasivoCorrecto) }}
+                </div>
             </div>
         </div>
     </div>
@@ -602,6 +686,14 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
             this.$nextTick(() => this.calcTotales());
         },
 
+        parseImporte(v) {
+            v = String(v).trim();
+            if (v.includes(',')) {
+                return parseFloat(v.replace(/\./g, '').replace(',', '.')) || 0;
+            }
+            return parseFloat(v) || 0;
+        },
+
         totalActivo: 0,
         totalPasivo: 0,
 
@@ -610,7 +702,7 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
             for (const bi in this.filas[secKey] ?? {}) {
                 for (const fila of this.filas[secKey][bi] ?? []) {
                     if (!fila.importe) continue;
-                    total += parseFloat(String(fila.importe).replace(/\./g, '').replace(',', '.')) || 0;
+                    total += this.parseImporte(fila.importe);
                 }
             }
             return total;
@@ -622,7 +714,7 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
                 for (const bi in this.filas[sec.key] ?? {}) {
                     for (const fila of this.filas[sec.key][bi]) {
                         if (!fila.importe) continue;
-                        const v = parseFloat(String(fila.importe).replace(/\./g, '').replace(',', '.')) || 0;
+                        const v = this.parseImporte(fila.importe);
                         if (sec.col === 'left') activo += v;
                         else pasivo += v;
                     }
