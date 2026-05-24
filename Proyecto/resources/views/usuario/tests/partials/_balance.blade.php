@@ -10,11 +10,13 @@
     $rightSecsBottom = array_filter($rightSecs, fn($s) => $s['key'] === 'pasivo_c');
 
     $todosElementos = [];
+    $uidCounter = 0;
     foreach ($secciones as $sec) {
         foreach ($sec['bloques'] as $bloque) {
             foreach ($bloque['filas'] as $fila) {
                 if (!empty($fila['nombre'])) {
-                    $todosElementos[] = ['nombre' => $fila['nombre'], 'importe' => $fila['importe'] ?? ''];
+                    // uid es un índice numérico único por instancia; permite duplicados de nombre
+                    $todosElementos[] = ['uid' => $uidCounter++, 'nombre' => $fila['nombre'], 'importe' => $fila['importe'] ?? ''];
                 }
             }
         }
@@ -64,12 +66,14 @@
                                     <template x-for="(fila, fi) in getFilas(sec.key, bi)" :key="fi">
                                         <div class="bal-row">
                                             <div class="bal-col-nombre">
-                                                <select :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" class="bal-select" x-model="fila.nombre" @change="onSelectNombre(sec.key, bi, fi, $event.target.value)">
+                                                {{-- uid como valor interno; hidden input envía nombre al servidor --}}
+                                                <select class="bal-select" x-model="fila.uid" @change="onSelectUid(sec.key, bi, fi, $event.target.value)">
                                                     <option value="">— Selecciona —</option>
-                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.nombre">
-                                                        <option :value="el.nombre" x-text="el.nombre"></option>
+                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.uid">
+                                                        <option :value="el.uid" x-text="el.nombre"></option>
                                                     </template>
                                                 </select>
+                                                <input type="hidden" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" :value="fila.nombre">
                                             </div>
                                             <div class="bal-col-importe">
                                                 <input type="text" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][importe]`" class="bal-importe-input" x-model="fila.importe" placeholder="0" readonly>
@@ -106,12 +110,14 @@
                                     <template x-for="(fila, fi) in getFilas(sec.key, bi)" :key="fi">
                                         <div class="bal-row">
                                             <div class="bal-col-nombre">
-                                                <select :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" class="bal-select" x-model="fila.nombre" @change="onSelectNombre(sec.key, bi, fi, $event.target.value)">
+                                                {{-- uid como valor interno; hidden input envía nombre al servidor --}}
+                                                <select class="bal-select" x-model="fila.uid" @change="onSelectUid(sec.key, bi, fi, $event.target.value)">
                                                     <option value="">— Selecciona —</option>
-                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.nombre">
-                                                        <option :value="el.nombre" x-text="el.nombre"></option>
+                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.uid">
+                                                        <option :value="el.uid" x-text="el.nombre"></option>
                                                     </template>
                                                 </select>
+                                                <input type="hidden" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" :value="fila.nombre">
                                             </div>
                                             <div class="bal-col-importe">
                                                 <input type="text" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][importe]`" class="bal-importe-input" x-model="fila.importe" placeholder="0" readonly>
@@ -150,12 +156,14 @@
                                     <template x-for="(fila, fi) in getFilas(sec.key, bi)" :key="fi">
                                         <div class="bal-row">
                                             <div class="bal-col-nombre">
-                                                <select :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" class="bal-select" x-model="fila.nombre" @change="onSelectNombre(sec.key, bi, fi, $event.target.value)">
+                                                {{-- uid como valor interno; hidden input envía nombre al servidor --}}
+                                                <select class="bal-select" x-model="fila.uid" @change="onSelectUid(sec.key, bi, fi, $event.target.value)">
                                                     <option value="">— Selecciona —</option>
-                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.nombre">
-                                                        <option :value="el.nombre" x-text="el.nombre"></option>
+                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.uid">
+                                                        <option :value="el.uid" x-text="el.nombre"></option>
                                                     </template>
                                                 </select>
+                                                <input type="hidden" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" :value="fila.nombre">
                                             </div>
                                             <div class="bal-col-importe">
                                                 <input type="text" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][importe]`" class="bal-importe-input" x-model="fila.importe" placeholder="0" readonly>
@@ -192,12 +200,14 @@
                                     <template x-for="(fila, fi) in getFilas(sec.key, bi)" :key="fi">
                                         <div class="bal-row">
                                             <div class="bal-col-nombre">
-                                                <select :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" class="bal-select" x-model="fila.nombre" @change="onSelectNombre(sec.key, bi, fi, $event.target.value)">
+                                                {{-- uid como valor interno; hidden input envía nombre al servidor --}}
+                                                <select class="bal-select" x-model="fila.uid" @change="onSelectUid(sec.key, bi, fi, $event.target.value)">
                                                     <option value="">— Selecciona —</option>
-                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.nombre">
-                                                        <option :value="el.nombre" x-text="el.nombre"></option>
+                                                    <template x-for="el in disponiblesParaFila(sec.key, bi, fi)" :key="el.uid">
+                                                        <option :value="el.uid" x-text="el.nombre"></option>
                                                     </template>
                                                 </select>
+                                                <input type="hidden" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][nombre]`" :value="fila.nombre">
                                             </div>
                                             <div class="bal-col-importe">
                                                 <input type="text" :name="`respuestas[{{ $id }}][${sec.key}][${bi}][${fi}][importe]`" class="bal-importe-input" x-model="fila.importe" placeholder="0" readonly>
@@ -232,7 +242,7 @@
     <div class="bal-banco">
         <div class="bal-banco-hdr"> Elementos disponibles</div>
         <div class="bal-banco-grid">
-            <template x-for="el in elementosDisponibles" :key="el.nombre">
+            <template x-for="el in elementosDisponibles" :key="el.uid"> 
                 <div class="bal-banco-item">
                     <span class="bal-banco-nombre" x-text="el.nombre"></span>
                     <span class="bal-banco-importe" x-text="el.importe"></span>
@@ -313,35 +323,53 @@
                             </div>
                             @foreach ($sec['bloques'] as $bi => $bloque)
                                 @if(!empty($bloque['label']))<div class="bal-block-hdr">{{ $bloque['label'] }}</div>@endif
+                                
                                 @php
                                     $filasUsuario   = $userResp[$sec['key']][$bi] ?? [];
                                     $filasCorrectas = array_filter($bloque['filas'], fn($f) => !empty($f['nombre']));
+                                    
+                                    // Control para evitar emparejar dos veces el mismo elemento si hay duplicados
+                                    $matched = [];
+                                    foreach ($filasCorrectas as $idx => $fc) $matched[$idx] = false;
                                 @endphp
+                                
+                                {{-- 1. PINTAR RESPUESTAS DEL USUARIO --}}
                                 @foreach ($filasUsuario as $fi => $filaU)
                                     @if(!empty($filaU['nombre']))
                                         @php
-                                            $perteneceAqui = collect($bloque['filas'])->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $filaCorrecta  = collect($bloque['filas'])->first(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $importeOk     = $filaCorrecta && abs($normImporte($filaU['importe'] ?? '') - $normImporte($filaCorrecta['importe'] ?? '')) < 0.01;
-                                            $correcto      = $perteneceAqui && $importeOk;
-                                            $rowClass      = $correcto ? 'bal-correct' : 'bal-incorrect';
+                                            $correcto = false;
+                                            // Buscar la primera fila correcta que coincida en nombre Y monto exacto
+                                            foreach ($filasCorrectas as $idx => $filaC) {
+                                                if (!$matched[$idx]) {
+                                                    $mismoNombre = strtolower(trim($filaC['nombre'])) === strtolower(trim($filaU['nombre']));
+                                                    $mismoImporte = abs($normImporte($filaC['importe'] ?? '') - $normImporte($filaU['importe'] ?? '')) < 0.01;
+                                                    
+                                                    if ($mismoNombre && $mismoImporte) {
+                                                        $correcto = true;
+                                                        $matched[$idx] = true; // Consumimos este elemento correcto
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         @endphp
-                                        <div class="bal-row {{ $rowClass }}">
+                                        
+                                        <div class="bal-row {{ $correcto ? 'bal-correct' : 'bal-incorrect' }}">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre">{{ $filaU['nombre'] }}</span>
                                             </div>
                                             <div class="bal-col-importe layout-correction-importe">
                                                 <span class="bal-importe-val">{{ $filaU['importe'] ?? '—' }}</span>
-                                                @if(!$correcto && $perteneceAqui)
-                                                    <span class="val-correct-inline">({{ $filaCorrecta['importe'] ?? '' }})</span>
-                                                @endif
+                                                {{-- Eliminada la corrección en línea para forzar que aparezca abajo si falla --}}
                                             </div>
                                             <div class="bal-col-accion"></div>
                                         </div>
                                     @endif
                                 @endforeach
-                                @foreach ($filasCorrectas as $filaC)
-                                    @if(!collect($filasUsuario)->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaC['nombre']))))
+                                
+                                {{-- 2. PINTAR RESPUESTAS CORRECTAS FALTANTES (bal-missing) --}}
+                                @foreach ($filasCorrectas as $idx => $filaC)
+                                    {{-- Si no fue emparejada, significa que el usuario no la puso, o falló en el monto --}}
+                                    @if(!$matched[$idx])
                                         <div class="bal-row bal-missing">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre" style="color: #2563eb; font-weight: 500;">{{ $filaC['nombre'] }}</span>
@@ -383,35 +411,53 @@
                             </div>
                             @foreach ($sec['bloques'] as $bi => $bloque)
                                 @if(!empty($bloque['label']))<div class="bal-block-hdr">{{ $bloque['label'] }}</div>@endif
+                                
                                 @php
                                     $filasUsuario   = $userResp[$sec['key']][$bi] ?? [];
                                     $filasCorrectas = array_filter($bloque['filas'], fn($f) => !empty($f['nombre']));
+                                    
+                                    // Control para evitar emparejar dos veces el mismo elemento si hay duplicados
+                                    $matched = [];
+                                    foreach ($filasCorrectas as $idx => $fc) $matched[$idx] = false;
                                 @endphp
+                                
+                                {{-- 1. PINTAR RESPUESTAS DEL USUARIO --}}
                                 @foreach ($filasUsuario as $fi => $filaU)
                                     @if(!empty($filaU['nombre']))
                                         @php
-                                            $perteneceAqui = collect($bloque['filas'])->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $filaCorrecta  = collect($bloque['filas'])->first(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $importeOk     = $filaCorrecta && abs($normImporte($filaU['importe'] ?? '') - $normImporte($filaCorrecta['importe'] ?? '')) < 0.01;
-                                            $correcto      = $perteneceAqui && $importeOk;
-                                            $rowClass      = $correcto ? 'bal-correct' : 'bal-incorrect';
+                                            $correcto = false;
+                                            // Buscar la primera fila correcta que coincida en nombre Y monto exacto
+                                            foreach ($filasCorrectas as $idx => $filaC) {
+                                                if (!$matched[$idx]) {
+                                                    $mismoNombre = strtolower(trim($filaC['nombre'])) === strtolower(trim($filaU['nombre']));
+                                                    $mismoImporte = abs($normImporte($filaC['importe'] ?? '') - $normImporte($filaU['importe'] ?? '')) < 0.01;
+                                                    
+                                                    if ($mismoNombre && $mismoImporte) {
+                                                        $correcto = true;
+                                                        $matched[$idx] = true; // Consumimos este elemento correcto
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         @endphp
-                                        <div class="bal-row {{ $rowClass }}">
+                                        
+                                        <div class="bal-row {{ $correcto ? 'bal-correct' : 'bal-incorrect' }}">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre">{{ $filaU['nombre'] }}</span>
                                             </div>
                                             <div class="bal-col-importe layout-correction-importe">
                                                 <span class="bal-importe-val">{{ $filaU['importe'] ?? '—' }}</span>
-                                                @if(!$correcto && $perteneceAqui)
-                                                    <span class="val-correct-inline">({{ $filaCorrecta['importe'] ?? '' }})</span>
-                                                @endif
+                                                {{-- Eliminada la corrección en línea para forzar que aparezca abajo si falla --}}
                                             </div>
                                             <div class="bal-col-accion"></div>
                                         </div>
                                     @endif
                                 @endforeach
-                                @foreach ($filasCorrectas as $filaC)
-                                    @if(!collect($filasUsuario)->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaC['nombre']))))
+                                
+                                {{-- 2. PINTAR RESPUESTAS CORRECTAS FALTANTES (bal-missing) --}}
+                                @foreach ($filasCorrectas as $idx => $filaC)
+                                    {{-- Si no fue emparejada, significa que el usuario no la puso, o falló en el monto --}}
+                                    @if(!$matched[$idx])
                                         <div class="bal-row bal-missing">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre" style="color: #2563eb; font-weight: 500;">{{ $filaC['nombre'] }}</span>
@@ -455,35 +501,53 @@
                             </div>
                             @foreach ($sec['bloques'] as $bi => $bloque)
                                 @if(!empty($bloque['label']))<div class="bal-block-hdr">{{ $bloque['label'] }}</div>@endif
+                                
                                 @php
                                     $filasUsuario   = $userResp[$sec['key']][$bi] ?? [];
                                     $filasCorrectas = array_filter($bloque['filas'], fn($f) => !empty($f['nombre']));
+                                    
+                                    // Control para evitar emparejar dos veces el mismo elemento si hay duplicados
+                                    $matched = [];
+                                    foreach ($filasCorrectas as $idx => $fc) $matched[$idx] = false;
                                 @endphp
+                                
+                                {{-- 1. PINTAR RESPUESTAS DEL USUARIO --}}
                                 @foreach ($filasUsuario as $fi => $filaU)
                                     @if(!empty($filaU['nombre']))
                                         @php
-                                            $perteneceAqui = collect($bloque['filas'])->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $filaCorrecta  = collect($bloque['filas'])->first(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $importeOk     = $filaCorrecta && abs($normImporte($filaU['importe'] ?? '') - $normImporte($filaCorrecta['importe'] ?? '')) < 0.01;
-                                            $correcto      = $perteneceAqui && $importeOk;
-                                            $rowClass      = $correcto ? 'bal-correct' : 'bal-incorrect';
+                                            $correcto = false;
+                                            // Buscar la primera fila correcta que coincida en nombre Y monto exacto
+                                            foreach ($filasCorrectas as $idx => $filaC) {
+                                                if (!$matched[$idx]) {
+                                                    $mismoNombre = strtolower(trim($filaC['nombre'])) === strtolower(trim($filaU['nombre']));
+                                                    $mismoImporte = abs($normImporte($filaC['importe'] ?? '') - $normImporte($filaU['importe'] ?? '')) < 0.01;
+                                                    
+                                                    if ($mismoNombre && $mismoImporte) {
+                                                        $correcto = true;
+                                                        $matched[$idx] = true; // Consumimos este elemento correcto
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         @endphp
-                                        <div class="bal-row {{ $rowClass }}">
+                                        
+                                        <div class="bal-row {{ $correcto ? 'bal-correct' : 'bal-incorrect' }}">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre">{{ $filaU['nombre'] }}</span>
                                             </div>
                                             <div class="bal-col-importe layout-correction-importe">
                                                 <span class="bal-importe-val">{{ $filaU['importe'] ?? '—' }}</span>
-                                                @if(!$correcto && $perteneceAqui)
-                                                    <span class="val-correct-inline">({{ $filaCorrecta['importe'] ?? '' }})</span>
-                                                @endif
+                                                {{-- Eliminada la corrección en línea para forzar que aparezca abajo si falla --}}
                                             </div>
                                             <div class="bal-col-accion"></div>
                                         </div>
                                     @endif
                                 @endforeach
-                                @foreach ($filasCorrectas as $filaC)
-                                    @if(!collect($filasUsuario)->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaC['nombre']))))
+                                
+                                {{-- 2. PINTAR RESPUESTAS CORRECTAS FALTANTES (bal-missing) --}}
+                                @foreach ($filasCorrectas as $idx => $filaC)
+                                    {{-- Si no fue emparejada, significa que el usuario no la puso, o falló en el monto --}}
+                                    @if(!$matched[$idx])
                                         <div class="bal-row bal-missing">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre" style="color: #2563eb; font-weight: 500;">{{ $filaC['nombre'] }}</span>
@@ -525,35 +589,53 @@
                             </div>
                             @foreach ($sec['bloques'] as $bi => $bloque)
                                 @if(!empty($bloque['label']))<div class="bal-block-hdr">{{ $bloque['label'] }}</div>@endif
+                                
                                 @php
                                     $filasUsuario   = $userResp[$sec['key']][$bi] ?? [];
                                     $filasCorrectas = array_filter($bloque['filas'], fn($f) => !empty($f['nombre']));
+                                    
+                                    // Control para evitar emparejar dos veces el mismo elemento si hay duplicados
+                                    $matched = [];
+                                    foreach ($filasCorrectas as $idx => $fc) $matched[$idx] = false;
                                 @endphp
+                                
+                                {{-- 1. PINTAR RESPUESTAS DEL USUARIO --}}
                                 @foreach ($filasUsuario as $fi => $filaU)
                                     @if(!empty($filaU['nombre']))
                                         @php
-                                            $perteneceAqui = collect($bloque['filas'])->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $filaCorrecta  = collect($bloque['filas'])->first(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaU['nombre'])));
-                                            $importeOk     = $filaCorrecta && abs($normImporte($filaU['importe'] ?? '') - $normImporte($filaCorrecta['importe'] ?? '')) < 0.01;
-                                            $correcto      = $perteneceAqui && $importeOk;
-                                            $rowClass      = $correcto ? 'bal-correct' : 'bal-incorrect';
+                                            $correcto = false;
+                                            // Buscar la primera fila correcta que coincida en nombre Y monto exacto
+                                            foreach ($filasCorrectas as $idx => $filaC) {
+                                                if (!$matched[$idx]) {
+                                                    $mismoNombre = strtolower(trim($filaC['nombre'])) === strtolower(trim($filaU['nombre']));
+                                                    $mismoImporte = abs($normImporte($filaC['importe'] ?? '') - $normImporte($filaU['importe'] ?? '')) < 0.01;
+                                                    
+                                                    if ($mismoNombre && $mismoImporte) {
+                                                        $correcto = true;
+                                                        $matched[$idx] = true; // Consumimos este elemento correcto
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         @endphp
-                                        <div class="bal-row {{ $rowClass }}">
+                                        
+                                        <div class="bal-row {{ $correcto ? 'bal-correct' : 'bal-incorrect' }}">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre">{{ $filaU['nombre'] }}</span>
                                             </div>
                                             <div class="bal-col-importe layout-correction-importe">
                                                 <span class="bal-importe-val">{{ $filaU['importe'] ?? '—' }}</span>
-                                                @if(!$correcto && $perteneceAqui)
-                                                    <span class="val-correct-inline">({{ $filaCorrecta['importe'] ?? '' }})</span>
-                                                @endif
+                                                {{-- Eliminada la corrección en línea para forzar que aparezca abajo si falla --}}
                                             </div>
                                             <div class="bal-col-accion"></div>
                                         </div>
                                     @endif
                                 @endforeach
-                                @foreach ($filasCorrectas as $filaC)
-                                    @if(!collect($filasUsuario)->contains(fn($f) => strtolower(trim($f['nombre'] ?? '')) === strtolower(trim($filaC['nombre']))))
+                                
+                                {{-- 2. PINTAR RESPUESTAS CORRECTAS FALTANTES (bal-missing) --}}
+                                @foreach ($filasCorrectas as $idx => $filaC)
+                                    {{-- Si no fue emparejada, significa que el usuario no la puso, o falló en el monto --}}
+                                    @if(!$matched[$idx])
                                         <div class="bal-row bal-missing">
                                             <div class="bal-col-nombre">
                                                 <span class="bal-nombre" style="color: #2563eb; font-weight: 500;">{{ $filaC['nombre'] }}</span>
@@ -642,25 +724,30 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
             for (const secKey in this.filas) {
                 for (const bi in this.filas[secKey]) {
                     for (const fila of this.filas[secKey][bi]) {
-                        if (fila.nombre) usados.add(fila.nombre);
+                        // Rastrear por uid para que duplicados de nombre se traten de forma independiente
+                        if (fila.uid !== null && fila.uid !== undefined && fila.uid !== '') usados.add(fila.uid);
                     }
                 }
             }
-            return this.todosElementos.filter(el => !usados.has(el.nombre));
+            return this.todosElementos.filter(el => !usados.has(el.uid));
         },
 
         disponiblesParaFila(secKey, bi, fi) {
-            const filaActual = this.filas[secKey]?.[bi]?.[fi]?.nombre ?? '';
+            const filaActualUid = this.filas[secKey]?.[bi]?.[fi]?.uid ?? null;
             const usados = new Set();
             for (const sk in this.filas) {
                 for (const b in this.filas[sk]) {
                     for (let f = 0; f < this.filas[sk][b].length; f++) {
-                        const n = this.filas[sk][b][f].nombre;
-                        if (n && !(sk === secKey && parseInt(b) === bi && f === fi)) usados.add(n);
+                        const uid = this.filas[sk][b][f].uid;
+                        if (uid !== null && uid !== undefined && uid !== '') {
+                            // Excluir todos los uids ocupados por otras filas
+                            if (!(sk === secKey && parseInt(b) === bi && f === fi)) usados.add(uid);
+                        }
                     }
                 }
             }
-            return this.todosElementos.filter(el => !usados.has(el.nombre) || el.nombre === filaActual);
+            // Mostrar los disponibles + el que ya tiene esta fila (para que siga seleccionado)
+            return this.todosElementos.filter(el => !usados.has(el.uid) || el.uid === filaActualUid);
         },
 
         getFilas(secKey, bi) {
@@ -672,7 +759,7 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
         addRow(secKey, bi) {
             if (!this.filas[secKey]) this.filas[secKey] = {};
             if (!this.filas[secKey][bi]) this.filas[secKey][bi] = [];
-            this.filas[secKey][bi].push({ nombre: '', importe: '' });
+            this.filas[secKey][bi].push({ uid: null, nombre: '', importe: '' });
         },
 
         removeRow(secKey, bi, fi) {
@@ -680,8 +767,12 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
             this.$nextTick(() => this.calcTotales());
         },
 
-        onSelectNombre(secKey, bi, fi, nombre) {
-            const el = this.todosElementos.find(e => e.nombre === nombre);
+        onSelectUid(secKey, bi, fi, uid) {
+            // uid llega como string desde el DOM; convertir a número para comparación estricta
+            const uidNum = uid !== '' && uid !== null ? parseInt(uid, 10) : null;
+            const el = uidNum !== null ? this.todosElementos.find(e => e.uid === uidNum) : null;
+            this.filas[secKey][bi][fi].uid     = uidNum !== null ? uidNum : null;
+            this.filas[secKey][bi][fi].nombre  = el ? el.nombre : '';
             this.filas[secKey][bi][fi].importe = el ? el.importe : '';
             this.$nextTick(() => this.calcTotales());
         },
@@ -734,24 +825,30 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
                 for (let bi = 0; bi < sec.bloques.length; bi++) {
                     const filasGuardadas = oldData?.[sec.key]?.[bi];
                     if (filasGuardadas) {
+                        // usedUids persiste dentro de un bloque para evitar asignar el mismo uid dos veces
+                        // cuando hay varios elementos con el mismo nombre (duplicados)
+                        const usedUids = new Set();
                         const filasFiltradas = filasGuardadas
                             .filter(f => f.nombre !== null && f.nombre !== '')
                             .map(f => {
-                                // Buscar coincidencia exacta primero, luego case-insensitive
-                                const el = this.todosElementos.find(e => e.nombre === f.nombre)
-                                        ?? this.todosElementos.find(e =>
-                                            e.nombre.toLowerCase().trim() === f.nombre.toLowerCase().trim()
-                                        );
+                                // Buscar el primer uid disponible con este nombre (respeta duplicados)
+                                const el = this.todosElementos.find(e =>
+                                    !usedUids.has(e.uid) &&
+                                    (e.nombre === f.nombre ||
+                                     e.nombre.toLowerCase().trim() === f.nombre.toLowerCase().trim())
+                                );
+                                if (el) usedUids.add(el.uid);
                                 return {
-                                    nombre:  f.nombre,          // ← SIEMPRE usar el nombre del old()
-                                    importe: el ? el.importe : f.importe  // importe del banco si existe, si no del old()
+                                    uid:     el ? el.uid : null,
+                                    nombre:  f.nombre,
+                                    importe: el ? el.importe : f.importe,
                                 };
                             });
                         this.filas[sec.key][bi] = filasFiltradas.length > 0
                             ? filasFiltradas
                             : [{ nombre: '', importe: '' }];
                     } else {
-                        this.filas[sec.key][bi] = [{ nombre: '', importe: '' }];
+                        this.filas[sec.key][bi] = [{ uid: null, nombre: '', importe: '' }];
                     }
                 }
             }
@@ -763,11 +860,12 @@ function balanceApp(balId, secciones, todosElementos, oldData = {}) {
                 for (const secKey in this.filas) {
                     for (const bi in this.filas[secKey]) {
                         this.filas[secKey][bi].forEach((fila, fi) => {
-                            if (fila.nombre) {
-                                const nombre = fila.nombre;
-                                fila.nombre = '';           // reset momentáneo
-                                this.$nextTick(() => {      // en el siguiente tick restaurar
-                                    fila.nombre = nombre;
+                            if (fila.uid !== null && fila.uid !== undefined) {
+                                // Forzar re-sincronización del select mediante reset momentáneo de uid
+                                const uid = fila.uid;
+                                fila.uid = null;
+                                this.$nextTick(() => {
+                                    fila.uid = uid;
                                 });
                             }
                         });

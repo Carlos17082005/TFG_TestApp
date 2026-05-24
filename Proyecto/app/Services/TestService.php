@@ -215,34 +215,51 @@ class TestService
 
     private function corregirBalance(mixed $usuario, array $secciones): float {
         if (!is_array($usuario) || empty($secciones)) return 0.0;
-        $correctos = [];
+
+        // Usamos lista indexada (no dict por nombre) para soportar nombres duplicados.
+        // Cada entrada se marca como 'matched' al ser consumida, evitando doble conteo.
+        $listaCorrectos = [];
         foreach ($secciones as $sec) {
             foreach ($sec['bloques'] as $bi => $bloque) {
                 foreach ($bloque['filas'] as $fila) {
                     if (empty($fila['nombre'])) continue;
-                    $correctos[strtolower(trim($fila['nombre']))] = [
+                    $listaCorrectos[] = [
+                        'nombre'  => strtolower(trim($fila['nombre'])),
                         'secKey'  => $sec['key'],
-                        'bi'      => $bi,
+                        'bi'      => (int) $bi,
                         'importe' => $fila['importe'] ?? '',
+                        'matched' => false,
                     ];
                 }
             }
         }
-        $total = count($correctos); $aciertos = 0;
+
+        $total = count($listaCorrectos);
+        $aciertos = 0;
+
         foreach ($usuario as $secKey => $bloques) {
             foreach ($bloques as $bi => $filas) {
                 foreach ($filas as $filaU) {
                     $nombre = strtolower(trim($filaU['nombre'] ?? ''));
                     if (empty($nombre)) continue;
-                    $correcto = $correctos[$nombre] ?? null;
-                    if (!$correcto) continue;
-                    $secOk     = $correcto['secKey'] === $secKey;
-                    $bloqueOk  = (int) $correcto['bi'] === (int) $bi;
-                    $importeOk = abs($this->normalizarImporte((string) ($filaU['importe'] ?? '')) - $this->normalizarImporte((string) $correcto['importe'])) < 0.01;
-                    if ($secOk && $bloqueOk && $importeOk) { $aciertos++; }
+                    $importeU = $this->normalizarImporte((string) ($filaU['importe'] ?? ''));
+
+                    // Buscar la primera entrada correcta no consumida que coincida
+                    foreach ($listaCorrectos as &$correcto) {
+                        if ($correcto['matched']) continue;
+                        if ($correcto['nombre'] !== $nombre) continue;
+                        if ($correcto['secKey'] !== $secKey) continue;
+                        if ($correcto['bi'] !== (int) $bi) continue;
+                        if (abs($importeU - $this->normalizarImporte((string) $correcto['importe'])) >= 0.01) continue;
+                        $correcto['matched'] = true;
+                        $aciertos++;
+                        break;
+                    }
+                    unset($correcto);
                 }
             }
         }
+
         return $total > 0 ? $aciertos / $total : 0.0;
     }
 
