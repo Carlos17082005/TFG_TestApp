@@ -6,14 +6,9 @@
     @if(isset($moduloActual) && $moduloActual)
     <style>
         :root {
-            /* Definimos el color principal desde la base de datos */
             --color-modulo: {{ $moduloActual->color }};
-            
-            /* Variantes con transparencia (agregando opacidad en Hex) */
-            --color-modulo-10: {{ $moduloActual->color }}1a; /* 10% opacidad */
-            --color-modulo-20: {{ $moduloActual->color }}33; /* 20% opacidad */
-            
-            /* Color para estados hover */
+            --color-modulo-10: {{ $moduloActual->color }}1a; 
+            --color-modulo-20: {{ $moduloActual->color }}33; 
             --color-modulo-h: {{ $moduloActual->color }}; 
         }
     </style>

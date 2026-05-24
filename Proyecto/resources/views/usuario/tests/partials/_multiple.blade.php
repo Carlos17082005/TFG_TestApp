@@ -1,21 +1,40 @@
-@php $disabled = $estado ? 'disabled' : ''; @endphp
+@php
+    $disabled = $estado ? 'disabled' : '';
+
+    $indexCorrecto = null;
+    $indexUsuario  = null;
+    if ($estado) {
+        foreach ($opciones as $i => $op) {
+            if ($indexCorrecto === null && $op === $estado['correcta']) $indexCorrecto = $i;
+            if ($indexUsuario  === null && $op === $estado['usuario'])  $indexUsuario  = $i;
+        }
+    }
+@endphp
 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
     @foreach ($opciones as $index => $opcion)
         @php
-            $letra = chr(97 + $index); $class = ''; $checked = ''; 
-            $enBlanco = true; // sirve para detectar si ha ha dejado en blanco la respuesta
-            if ($estado) {
-                if ($estado['usuario'] === $opcion){ $checked = 'checked'; $enBlanco = false;}
-                if ($estado['correcta'] === $opcion) $class .= ' correct-bg';
-                elseif ($estado['usuario'] === $opcion) $class .= ' incorrect-bg';
+            $letra   = chr(97 + $index);
+            $class   = '';
+            $checked = '';
 
-                // si la respuesta se ha dejado en blanco, le pone una clase especial que indica 
-                // cual sería la correción (de forma diferente a si la hubiera puesto corretamente)
-                if (($estado['correcta'] === $opcion) && $enBlanco) $class .= ' azulado-bg';
+            if ($estado) {
+                if ($index === $indexUsuario) $checked = 'checked';
+
+                if ($index === $indexCorrecto) {
+                    $class .= ' correct-bg';
+                    if ($indexUsuario === null) $class .= ' azulado-bg';
+
+                } elseif ($index === $indexUsuario) {
+                    $class .= ' incorrect-bg';
+                }
             }
         @endphp
         <label class="{{ $class }}">
-            <input type="radio" name="respuestas[{{ $id }}]" value="{{ $opcion }}" {{ $estado ? $checked : (old('respuestas.' . $id) === $opcion ? 'checked' : '') }} {{ $disabled }}>
+            <input type="radio" name="respuestas[{{ $id }}]" value="{{ $opcion }}"
+                {{ $estado
+                    ? $checked
+                    : (old('respuestas.' . $id) === $opcion ? 'checked' : '') }}
+                {{ $disabled }}>
             <span><strong>{{ $letra }})</strong> {{ $opcion }}</span>
         </label>
     @endforeach

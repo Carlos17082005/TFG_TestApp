@@ -2,7 +2,25 @@
     $disabled = $estado ? 'disabled' : '';
     $letraParaTexto = [];
     foreach ($mezclada as $i => $textoB) { $letraParaTexto[chr(97 + $i)] = $textoB; }
-    $textoParaLetra = array_flip($letraParaTexto);
+
+
+    $letraATexto = function($valor) use ($letraParaTexto, $mezclada) {
+        if ($valor === null || $valor === '') return null;
+        $lower = strtolower(trim($valor));
+        if (strlen($lower) === 1 && isset($letraParaTexto[$lower])) {
+            return $letraParaTexto[$lower];
+        }
+        return $valor;
+    };
+
+    $textoALetra = function($textoB) use ($mezclada) {
+        foreach ($mezclada as $i => $t) {
+            if (strtolower(trim($t)) === strtolower(trim($textoB))) {
+                return chr(97 + $i);
+            }
+        }
+        return '?';
+    };
 @endphp
 
 <div class="table-container" style="box-shadow: none; border: none;">
@@ -10,19 +28,28 @@
         <tbody>
             @foreach ($parejas as $index => $pareja)
                 @php
-                    $seleccionado = $estado['usuario'][$index] ?? '';
-                    $correcto = $pareja['b'];
-                    $esCorrecta = $estado && $seleccionado === $correcto;
-                    $letraCorrecta = $textoParaLetra[$correcto] ?? '?';
+                    $valorEnviado  = $estado['usuario'][$index] ?? ''; 
+                    $textoUsuario  = $letraATexto($valorEnviado); 
+                    $correcto      = $pareja['b']; 
+                    $esCorrecta    = $estado
+                                     && $textoUsuario !== null
+                                     && strtolower(trim($textoUsuario)) === strtolower(trim($correcto));
+                    $letraCorrecta = $textoALetra($correcto);
                     $class = 'form-input conecta-select conecta-grupo-' . $id;
                     if ($estado) $class .= $esCorrecta ? ' correct-bg' : ' incorrect-bg';
+
+                    $oldValor = old('respuestas.' . $id . '.' . $index, '');
                 @endphp
                 <tr style="border-bottom: 1px solid var(--border);">
                     <td style="padding: 0.5rem 0; width: 120px;">
                         <select name="respuestas[{{ $id }}][{{ $index }}]" class="{{ $class }}" {{ $disabled }} @if(!$estado) onchange="actualizarSelectsConecta({{ $id }})" @endif>
                             <option value="">-</option>
                             @foreach ($letraParaTexto as $letra => $textoB)
-                                <option value="{{ $textoB }}" {{ ($estado ? $seleccionado : old('respuestas.'.$id.'.'.$index)) === $textoB ? 'selected' : '' }}>{{ $letra }}</option>
+                                @php
+                                    $selVal = $estado ? $valorEnviado : $oldValor;
+                                    $isSelected = strtolower(trim($selVal)) === $letra;
+                                @endphp
+                                <option value="{{ $letra }}" {{ $isSelected ? 'selected' : '' }}>{{ $letra }}</option>
                             @endforeach
                         </select>
                         @if ($estado && !$esCorrecta)
@@ -45,6 +72,7 @@
 <script>
     function actualizarSelectsConecta(idPregunta) {
         const selects = document.querySelectorAll(`.conecta-grupo-${idPregunta}`);
+
         const seleccionados = Array.from(selects).map(s => s.value).filter(v => v !== '');
         selects.forEach(select => {
             const actual = select.value;

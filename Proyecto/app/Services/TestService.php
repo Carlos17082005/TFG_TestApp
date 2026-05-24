@@ -181,7 +181,7 @@ class TestService
             'multiple' => $this->corregirTextoNormalizado($respUsuario, $respCorrecta),
             'booleana' => $this->corregirExacto($respUsuario, $respCorrecta),
             'texto'    => $this->corregirTextoNormalizado($respUsuario, $respCorrecta),
-            'conecta'  => $this->corregirConecta($respUsuario, $contenido['parejas']),
+            'conecta'  => $this->corregirConecta($respUsuario, $contenido['parejas'], $contenido['columna_b_mezclada'] ?? []),
             default    => 0.0,
         };
     }
@@ -194,11 +194,20 @@ class TestService
         return $this->normalizar((string)$usuario) === $this->normalizar((string)$correcta) ? 1.0 : 0.0;
     }
 
-    private function corregirConecta(mixed $usuario, array $parejas): float {
+    private function corregirConecta(mixed $usuario, array $parejas, array $mezclada = []): float {
         if (!is_array($usuario) || empty($parejas)) return 0.0;
         $total = count($parejas); $aciertos = 0;
         foreach ($parejas as $index => $pareja) {
             $seleccionado = $usuario[$index] ?? null;
+
+            if ($seleccionado !== null && $seleccionado !== '' && !empty($mezclada)) {
+                $lower = strtolower(trim((string) $seleccionado));
+                if (strlen($lower) === 1 && $lower >= 'a' && $lower <= 'z') {
+                    $letterIndex = ord($lower) - 97;
+                    $seleccionado = $mezclada[$letterIndex] ?? $seleccionado;
+                }
+            }
+
             if ($this->normalizar((string)$seleccionado) === $this->normalizar($pareja['b'])) { $aciertos++; }
         }
         return $total > 0 ? $aciertos / $total : 0.0;
@@ -206,34 +215,51 @@ class TestService
 
     private function corregirBalance(mixed $usuario, array $secciones): float {
         if (!is_array($usuario) || empty($secciones)) return 0.0;
-        $correctos = [];
+
+        // Usamos lista indexada (no dict por nombre) para soportar nombres duplicados.
+        // Cada entrada se marca como 'matched' al ser consumida, evitando doble conteo.
+        $listaCorrectos = [];
         foreach ($secciones as $sec) {
             foreach ($sec['bloques'] as $bi => $bloque) {
                 foreach ($bloque['filas'] as $fila) {
                     if (empty($fila['nombre'])) continue;
-                    $correctos[strtolower(trim($fila['nombre']))] = [
+                    $listaCorrectos[] = [
+                        'nombre'  => strtolower(trim($fila['nombre'])),
                         'secKey'  => $sec['key'],
-                        'bi'      => $bi,
+                        'bi'      => (int) $bi,
                         'importe' => $fila['importe'] ?? '',
+                        'matched' => false,
                     ];
                 }
             }
         }
-        $total = count($correctos); $aciertos = 0;
+
+        $total = count($listaCorrectos);
+        $aciertos = 0;
+
         foreach ($usuario as $secKey => $bloques) {
             foreach ($bloques as $bi => $filas) {
                 foreach ($filas as $filaU) {
                     $nombre = strtolower(trim($filaU['nombre'] ?? ''));
                     if (empty($nombre)) continue;
-                    $correcto = $correctos[$nombre] ?? null;
-                    if (!$correcto) continue;
-                    $secOk     = $correcto['secKey'] === $secKey;
-                    $bloqueOk  = (int) $correcto['bi'] === (int) $bi;
-                    $importeOk = abs($this->normalizarImporte((string) ($filaU['importe'] ?? '')) - $this->normalizarImporte((string) $correcto['importe'])) < 0.01;
-                    if ($secOk && $bloqueOk && $importeOk) { $aciertos++; }
+                    $importeU = $this->normalizarImporte((string) ($filaU['importe'] ?? ''));
+
+                    // Buscar la primera entrada correcta no consumida que coincida
+                    foreach ($listaCorrectos as &$correcto) {
+                        if ($correcto['matched']) continue;
+                        if ($correcto['nombre'] !== $nombre) continue;
+                        if ($correcto['secKey'] !== $secKey) continue;
+                        if ($correcto['bi'] !== (int) $bi) continue;
+                        if (abs($importeU - $this->normalizarImporte((string) $correcto['importe'])) >= 0.01) continue;
+                        $correcto['matched'] = true;
+                        $aciertos++;
+                        break;
+                    }
+                    unset($correcto);
                 }
             }
         }
+
         return $total > 0 ? $aciertos / $total : 0.0;
     }
 

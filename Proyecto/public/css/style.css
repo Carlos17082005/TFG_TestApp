@@ -572,3 +572,70 @@ span.volver_negrita{
 .test-disabled h3 {
     color: #4b5563;
 }
+
+/* Tarjetas banco izquierda */
+.tarjeta-banco {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    border-radius: var(--r-sm);
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: border-left-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.tarjeta-banco:hover {
+    border-left-color: var(--color-modulo);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.13);
+    background: var(--surface-2, #f7f7f9);
+}
+
+/* Tarjetas panel derecho seleccionadas */
+.tarjeta-seleccionada {
+    background: var(--surface);
+    border: 1px solid var(--color-modulo-20, color-mix(in srgb, var(--color-modulo) 20%, transparent));
+    border-left: 3px solid var(--color-modulo);
+    border-radius: var(--r-sm);
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: box-shadow 0.15s, background 0.15s;
+}
+.tarjeta-seleccionada:hover {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.13);
+    background: var(--surface-2, #f7f7f9);
+}
+
+/* Botón X */
+.btn-quitar {
+    background: #fde8e8;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.btn-quitar:hover {
+    background: #c0392b;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.tarjeta-banco--atenuada {
+    background-color:#D4D4D4;
+}
