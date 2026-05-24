@@ -40,6 +40,13 @@ class RealizarTestController extends Controller
         
         // Recuperamos exactamente las mismas preguntas que el alumno resolvió
         $preguntas = $this->testService->prepararPreguntasTest($test);
+
+        // Aplicamos el orden aleatorizado guardado en sesión ANTES de corregir,
+        // para que columna_b_mezclada esté disponible al convertir letra → texto en conecta
+        foreach ($preguntas as $pregunta) {
+            $pregunta->contenido = $this->testService->aleatorizarOpciones($pregunta);
+        }
+
         $resultado = $this->testService->corregir($respuestas, $preguntas);
 
         $usuario = auth()->user();
@@ -60,11 +67,6 @@ class RealizarTestController extends Controller
                 'tipo'              => $test->tipo,
                 'duracion_segundos' => $duracionSegundos,
             ]);
-        }
-
-        // Volvemos a sincronizar el contenido guardado en Alpine para la vista
-        foreach ($preguntas as $pregunta) {
-            $pregunta->contenido = $this->testService->aleatorizarOpciones($pregunta);
         }
         $test->setRelation('preguntas', $preguntas);
 
